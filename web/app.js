@@ -244,7 +244,7 @@ function card(round,provider){
   const result=round.answers[provider];
   const article=document.createElement('article');article.className='answer-card '+provider;article.dataset.provider=provider;
   if(!result){article.className='skipped';article.textContent=names[provider]+'에게 보내지 않음';return article;}
-  const status={checking:'연결 확인 중',running:'답변 작성 중',summarizing:'이전 대화 요약 중',error:'요청 실패',done:''}[result.status];
+  const status={checking:'연결 확인 중',running:result.searching?'웹 검색 중':'답변 작성 중',summarizing:'이전 대화 요약 중',error:'요청 실패',done:''}[result.status];
   article.innerHTML='<div class="card-head"><img class="provider-logo" src="'+provider+'.svg" alt=""><strong>'+names[provider]+'</strong><small>'+status+'</small><button class="copy" aria-label="'+names[provider]+' 답변 복사" '+(result.status==='done'?'':'disabled')+'>복사</button></div><div class="answer-content"></div>';
   const body=article.querySelector('.answer-content');
   const requested=result.requestedModel??round.models?.[provider];
@@ -258,7 +258,20 @@ function card(round,provider){
     if(current().rounds.at(-1).id===round.id){const b=document.createElement('button');b.textContent='다시 시도';b.className='retry';b.disabled=busy();b.onclick=()=>send({action:'retry',id:selected,roundId:round.id,provider});body.append(b);}
   }else if(result.text)body.innerHTML=markdown(result.text);
   else body.innerHTML='<div class="card-state"><span class="spinner"></span>'+status+'</div>';
-  article.querySelector('.copy').onclick=()=>{send({action:'copy',text:result.text});toast('복사했습니다.');};
+  if(result.web){
+    const evidence=document.createElement('details');evidence.className='web-evidence';
+    const label=document.createElement('summary');
+    label.textContent=DualLensUI.searchLabel(result.web);evidence.append(label);
+    const description=document.createElement('p');description.textContent='검색 도구가 반환한 자료입니다. 답변에서 인용한 링크는 본문에 표시됩니다.';
+    if(result.web.sources?.length)evidence.append(description);
+    for(const source of result.web.sources||[]){
+      const href=DualLensUI.safeURL(source.url);if(!href)continue;
+      const a=document.createElement('a');a.href=href;a.rel='noreferrer noopener';a.textContent=source.title||new URL(href).hostname;evidence.append(a);
+    }
+    if(!result.web.sources?.length)evidence.open=true;
+    article.append(evidence);
+  }
+  article.querySelector('.copy').onclick=()=>{send({action:'copy',text:DualLensUI.answerText(result)});toast('복사했습니다.');};
   return article;
 }
 function render(){
@@ -487,7 +500,7 @@ $('export').onclick=()=>{
   let text='# '+(r.title||r.question)+'\n';
   for(const round of r.rounds){
     text+='\n## '+(round.kind==='feedback'?'피드백':'나 → '+names[round.target])+ '\n\n'+round.question+'\n';
-    for(const p of ['gpt','claude'])if(round.answers[p])text+='\n### '+names[p]+'\n\n'+(round.answers[p].text||round.answers[p].error||'')+'\n';
+    for(const p of ['gpt','claude'])if(round.answers[p])text+='\n### '+names[p]+'\n\n'+DualLensUI.answerText(round.answers[p])+'\n';
   }
   send({action:'export',text});
 };

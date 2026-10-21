@@ -267,11 +267,13 @@ export class Controller {
         if (round.answers[provider].status==='summarizing') await this.check(provider,this.cwd,abort.signal);
         round.answers[provider].status='running';this.publish();
         const prompt=conversationPrompt(record,round,provider,context,project);
-        const result=await this.answer(provider,prompt,{cwd:this.cwd,signal:abort.signal,model:round.models[provider],effort:round.efforts[provider],onText:text=>{
+        const result=await this.answer(provider,prompt,{cwd:this.cwd,signal:abort.signal,model:round.models[provider],effort:round.efforts[provider],webSearch:true,onSearch:()=>{
+          if(!abort.signal.aborted){round.answers[provider].searching=true;this.publish();}
+        },onText:text=>{
           if(!abort.signal.aborted){round.answers[provider].text=text;this.publish();}
         }});
         if(abort.signal.aborted)throw new Error('중지했습니다.');
-        round.answers[provider]={status:'done',text:result.text,durationMs:result.durationMs,model:result.model,requestedModel:round.models[provider],requestedEffort:round.efforts[provider]};
+        round.answers[provider]={status:'done',text:result.text,durationMs:result.durationMs,model:result.model,requestedModel:round.models[provider],requestedEffort:round.efforts[provider],web:result.web};
       } catch(error) {round.answers[provider]={status:'error',text:'',error:error.message};}
       this.persist();this.publish();
     })).finally(()=>{this.active=null;this.persist();this.publish();});

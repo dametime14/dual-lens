@@ -49,6 +49,18 @@
   function shouldSend(event,composing=false,justComposed=false){
     return event.key==='Enter'&&!event.shiftKey&&!event.altKey&&!event.ctrlKey&&!event.repeat&&!event.defaultPrevented&&!event.isComposing&&event.keyCode!==229&&!composing&&!justComposed;
   }
-  globalThis.DualLensUI={markdown,shouldSend,safeURL};
+  function searchLabel(web){
+    const labels={searched:'웹 검색, 자료 '+(web.sources?.length||0)+'개',not_used:'웹 검색 미사용',no_sources:'웹 검색 실행, 출처 링크 확인 불가',failed:'웹 검색 실패 또는 미완료'};
+    return (labels[web.status]||'웹 검색 상태 확인 불가')+(web.failed&&web.status!=='failed'?', 일부 검색 실패':'');
+  }
+  function answerText(result){
+    let text=result.text||result.error||'';
+    if(result.web){
+      text+='\n\n'+searchLabel(result.web);
+      if(result.web.sources?.length)text+='\n검색 도구가 반환한 자료:\n'+result.web.sources.filter(s=>safeURL(s.url)).map(s=>(s.title||'출처')+': '+safeURL(s.url)).join('\n');
+    }
+    return text;
+  }
+  globalThis.DualLensUI={markdown,shouldSend,safeURL,searchLabel,answerText};
 })();
 

@@ -23,6 +23,7 @@
   "src/quota.mjs",
   "tests/context.test.mjs",
   "tests/core.test.mjs",
+  "tests/search.test.mjs",
   "tests/effort.test.mjs",
   "tests/library.test.mjs",
   "tests/models.test.mjs",
