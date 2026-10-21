@@ -224,7 +224,7 @@ export class Controller {
         const record=this.get(message.id);
         const review=latestAnswers(record);
         if (!PROVIDERS.every(p=>review[p]?.status==='done')) throw new Error('각 모델의 최신 답변이 완료되어야 합니다. 실패한 요청은 먼저 다시 시도해 주세요.');
-        const round={id:randomUUID(),kind:'feedback',target:'both',question:String(message.focus||'').trim().slice(0,2000),createdAt:new Date().toISOString(),
+        const round={id:randomUUID(),kind:'feedback',reviewMode:'peer',target:'both',question:String(message.focus||'').trim().slice(0,2000),createdAt:new Date().toISOString(),
           review:Object.fromEntries(PROVIDERS.map(p=>[p,{roundId:review[p].roundId,question:review[p].question,text:review[p].text}])),answers:{}};
         record.rounds.push(round);this.start(record,round,PROVIDERS);return;
       }

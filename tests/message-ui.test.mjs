@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import '../web/message-utils.js';
 const {markdown,shouldSend,safeURL}=globalThis.DualLensUI;
 
+test('Markdown document export preserves content and unwraps only a complete Markdown fence',()=>{
+  const {documentText}=globalThis.DualLensUI;
+  assert.equal(documentText('# Plan\n\nText'),'# Plan\n\nText');
+  assert.equal(documentText('~~~markdown\n# Plan\n\nText\n~~~'),'# Plan\n\nText\n');
+  assert.equal(documentText('~~~python\nprint(1)\n~~~'),'~~~python\nprint(1)\n~~~');
+  assert.equal(documentText('Before\n~~~md\nText\n~~~'),'Before\n~~~md\nText\n~~~');
+});
 test('Enter sends, while Shift+Enter and IME confirmation never send',()=>{
   assert.equal(shouldSend({key:'Enter'}),true);
   assert.equal(shouldSend({key:'Enter',metaKey:true}),true);

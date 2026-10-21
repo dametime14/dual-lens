@@ -158,7 +158,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             NSPasteboard.general.clearContents(); NSPasteboard.general.setString(text, forType:.string); return
         }
         if action == "export", let text = body["text"] as? String {
-            let panel = NSSavePanel(); panel.nameFieldStringValue = "Dual Lens 대화.md"
+            let panel = NSSavePanel()
+            let proposed = (body["filename"] as? String ?? "Dual Lens 대화.md") as NSString
+            let filename = proposed.lastPathComponent
+            panel.nameFieldStringValue = filename.hasSuffix(".md") && filename.count <= 120 ? filename : "Dual Lens 대화.md"
+            panel.allowedContentTypes = [UTType(filenameExtension:"md") ?? .plainText]
             panel.beginSheetModal(for:window) { response in
                 if response == .OK, let url = panel.url {
                     do { try text.write(to:url, atomically:true, encoding:.utf8) }

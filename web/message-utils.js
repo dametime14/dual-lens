@@ -62,6 +62,11 @@
     }
     return text;
   }
-  globalThis.DualLensUI={markdown,shouldSend,safeURL,searchLabel,answerText};
+  function documentText(text){
+    const value=String(text||'');
+    const match=value.trim().match(/^(`{3,}|~{3,})(?:markdown|md)\s*\n([\s\S]*?)\n\1$/i);
+    return match&&!/^\s*(`{3,}|~{3,})/m.test(match[2])?match[2]+'\n':value;
+  }
+  globalThis.DualLensUI={markdown,shouldSend,safeURL,searchLabel,answerText,documentText};
 })();
 

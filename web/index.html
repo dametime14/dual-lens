@@ -37,7 +37,7 @@
   <div class="compose-controls"><button id="composer-toggle" aria-controls="composer" aria-expanded="true" hidden>⌄ 입력창 접기</button></div>
   <h1 id="welcome">무엇을 물어볼까요?</h1>
   <section id="composer" aria-label="메시지 작성">
-    <div class="composer-top"><div id="targets" role="group" aria-label="받는 모델"><button data-target="both" aria-pressed="true">GPT + Claude</button><button data-target="gpt" aria-pressed="false"><img src="gpt.svg" alt="">GPT</button><button data-target="claude" aria-pressed="false"><img src="claude.svg" alt="">Claude</button></div><button id="feedback" title="각 모델의 최신 답변을 서로 전달합니다. 입력한 질문은 보내지 않습니다.">⇄ 피드백</button></div>
+    <div class="composer-top"><div id="targets" role="group" aria-label="받는 모델"><button data-target="both" aria-pressed="true">GPT + Claude</button><button data-target="gpt" aria-pressed="false"><img src="gpt.svg" alt="">GPT</button><button data-target="claude" aria-pressed="false"><img src="claude.svg" alt="">Claude</button></div><button id="feedback" title="각 모델이 상대의 최신 답변만 검토합니다. 원래 답변은 유지됩니다. 입력한 질문은 보내지 않습니다.">⇄ 피드백</button></div>
     <div class="current-models" aria-label="선택한 모델과 생각 강도">
       <div class="composer-model"><img src="gpt.svg" alt="GPT"><select id="quick-model-gpt" aria-label="GPT 모델" title="GPT 모델"></select><select id="quick-effort-gpt" aria-label="GPT 생각 강도" title="GPT 생각 강도"></select></div>
       <div class="composer-model"><img src="claude.svg" alt="Claude"><select id="quick-model-claude" aria-label="Claude 모델" title="Claude 모델"></select><select id="quick-effort-claude" aria-label="Claude 생각 강도" title="Claude 생각 강도"></select></div>
@@ -67,8 +67,9 @@
     <dt>읽기 설정</dt><dd>상단의 문단 간격에서 좁게, 보통, 넓게를 선택합니다. 입력창 위의 접기 버튼으로 답변 영역을 넓히고, 하단의 입력창 열기로 다시 펼칩니다. 작성 중인 메시지는 유지됩니다. 두 설정은 다음 실행에도 적용됩니다.</dd>
     <dt>답변 보기</dt><dd>GPT, Claude 탭으로 답변을 읽습니다. 두 답변을 함께 비교하려면 <strong>나란히</strong>를 선택합니다. 이 선택은 메시지를 받는 모델 설정과 별개입니다.</dd>
     <dt>웹 검색과 출처</dt><dd>공개 사실을 묻는 질문과 피드백은 두 모델의 웹 도구로 확인합니다. 본문 링크와 답변 아래 검색 자료를 클릭해 출처를 엽니다. 검색하지 않았거나 실패하면 따로 표시합니다. 검색도 기존 구독 사용량을 쓰며, 별도 API로 전환하지 않습니다. 검색어와 조회 URL은 검색 서비스로 전달됩니다.</dd>
+    <dt>문서 저장</dt><dd>각 답변의 .md 저장으로 해당 모델의 Markdown 본문을 별도 파일로 저장합니다. 전체 대화는 Export로 저장합니다. PDF, Word 파일 생성이나 모델의 직접 파일 쓰기는 지원하지 않습니다.</dd>
     <dt>링크와 그림</dt><dd>웹 링크는 기본 브라우저에서 엽니다. 그림 생성과 실행형 결과물 미리보기는 지원하지 않습니다. 이미지 주소는 링크로 표시합니다.</dd>
-    <dt>피드백</dt><dd>두 모델의 답변이 완료되면 <strong>피드백</strong>을 누릅니다. 각 모델의 최신 답변과 해당 질문을 서로 전달합니다. 입력 중인 메시지는 보내지 않습니다.</dd>
+    <dt>피드백</dt><dd>두 모델의 답변이 완료되면 <strong>피드백</strong>을 누릅니다. 각 모델이 상대의 최신 답변을 연구, 아이디어, 기획, 실험 목적에 맞춰 검토합니다. 차이가 없으면 없다고 답하며 억지로 지적하지 않습니다. 기존 답변을 수정하지 않고 검토만 추가합니다. 반복 실행해도 피드백 대신 원래 답변을 검토합니다. 입력 중인 메시지는 보내지 않습니다.</dd>
     <dt>이어서 대화하기</dt><dd>같은 입력창에서 공통 질문이나 개별 질문을 계속 보냅니다. 개별 질문은 선택한 모델에게만 전달됩니다.</dd>
     <dt>사이드바</dt><dd>오른쪽 경계를 드래그해 너비를 조절합니다. 상단 접기 버튼으로 숨기고 왼쪽 열기 버튼으로 다시 표시합니다. 너비와 접힘 상태는 다음 실행에도 유지됩니다.</dd>
     <dt>프로젝트</dt><dd>프로젝트 이름을 우클릭하거나 <strong>⋯ → 이름 변경</strong>으로 이름을 바꿉니다. 왼쪽 <strong>프로젝트 +</strong>에서 프로젝트를 만들고 지침과 참고 문맥을 설정합니다. 프로젝트 이름을 눌러 펼친 뒤 안의 <strong>＋ 새 채팅</strong>을 누릅니다. 프로젝트를 펼쳐도 아래 전체 대화 목록은 바뀌지 않습니다. 왼쪽 <strong>＋ 새 채팅</strong>은 항상 프로젝트 없이 시작합니다.</dd>

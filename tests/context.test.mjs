@@ -60,6 +60,28 @@ test('feedback snapshot contains distinct questions and does not drift on retrie
   assert.equal(prompts.at(-1).q,original);
   assert.equal(latestAnswers(c.history[0]).gpt.question,'PRIVATE');
 });
+test('peer review preserves answers, repeats target answers and carries received critique forward',async t=>{
+  const dir=mkdtempSync(join(tmpdir(),'dual-peer-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
+  let phase='answer';const prompts=[];
+  const c=new Controller(dir,()=>{},{check:async()=>({}),answer:async(p,prompt)=>{prompts.push(prompt);return {text:p+' '+phase,durationMs:1};}});
+  const id=await c.dispatch({action:'ask',question:'Plan an experiment'});await c.pending;
+  const original=structuredClone(c.history[0].rounds[0]);phase='critique';
+  await c.dispatch({action:'feedback',id});await c.pending;
+  assert.deepEqual(c.history[0].rounds[0],original);
+  const first=c.history[0].rounds[1];assert.equal(first.reviewMode,'peer');
+  assert.equal(first.review.gpt.text,'gpt answer');
+  assert.equal(first.review.claude.text,'claude answer');
+  const entry=visibleEntries(c.history[0],'gpt').at(-1);
+  assert.equal(entry.receivedFeedback.text,'claude critique');
+  assert.equal(entry.receivedFeedback.onAnswerRoundId,original.id);
+  await c.dispatch({action:'feedback',id});await c.pending;
+  assert.deepEqual(c.history[0].rounds[2].review,first.review);
+  phase='follow-up';await c.dispatch({action:'ask',id,target:'gpt',question:'Use the feedback'});await c.pending;
+  assert.match(prompts.at(-1),/claude critique/);
+  assert.match(prompts.at(-1),/receivedFeedback/);
+  const record=c.history[0];record.rounds[1].answers.gpt={status:'error'};
+  assert.equal(visibleEntries(record,'gpt').find(e=>e.index===1).receivedFeedback.text,'claude critique');
+});
 test('legacy files remain untouched until explicitly loaded or removed',async t=>{
   const dir=mkdtempSync(join(tmpdir(),'dual-migrate-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
   const old=[{id:'old',question:'q',createdAt:new Date().toISOString(),answers:{gpt:{status:'done',text:'g'},claude:{status:'done',text:'c'}},feedback:{gpt:{status:'done',text:'review'}},focus:'numbers'}];

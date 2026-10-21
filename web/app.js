@@ -189,7 +189,7 @@ function openChat(){
 }
 function busy(){return !!state.active||Object.values(state.connections).some(c=>c.status==='checking');}
 function latest(record){
-  const found={};for(const r of record?.rounds||[])for(const [p,a]of Object.entries(r.answers))found[p]=a;
+  const found={};for(const r of (record?.rounds||[]).filter(r=>r.kind!=='feedback'))for(const [p,a]of Object.entries(r.answers))found[p]=a;
   return found;
 }
 function bytes(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':n>=1024?(n/1024).toFixed(1)+' KB':n+' B';}
@@ -254,8 +254,10 @@ function card(round,provider){
   const result=round.answers[provider];
   const article=document.createElement('article');article.className='answer-card '+provider;article.dataset.provider=provider;
   if(!result){article.className='skipped';article.textContent=names[provider]+'에게 보내지 않음';return article;}
+  const reviewing=round.kind==='feedback'&&round.reviewMode==='peer';
+  const label=reviewing?names[provider]+' → '+names[provider==='gpt'?'claude':'gpt']+' 답변 검토':names[provider];
   const status={checking:'연결 확인 중',running:result.searching?'웹 검색 중':'답변 작성 중',summarizing:'이전 대화 요약 중',error:'요청 실패',done:''}[result.status];
-  article.innerHTML='<div class="card-head"><img class="provider-logo" src="'+provider+'.svg" alt=""><strong>'+names[provider]+'</strong><small>'+status+'</small><button class="copy" aria-label="'+names[provider]+' 답변 복사" '+(result.status==='done'?'':'disabled')+'>복사</button></div><div class="answer-content"></div>';
+  article.innerHTML='<div class="card-head"><img class="provider-logo" src="'+provider+'.svg" alt=""><strong>'+label+'</strong><small>'+status+'</small><button class="copy" aria-label="'+names[provider]+' 답변 복사" '+(result.status==='done'?'':'disabled')+'>복사</button></div><div class="answer-content"></div>';
   const body=article.querySelector('.answer-content');
   const requested=result.requestedModel??round.models?.[provider];
   const modelLabel=document.createElement('div');modelLabel.className='model-label';
@@ -281,6 +283,9 @@ function card(round,provider){
     if(!result.web.sources?.length)evidence.open=true;
     article.append(evidence);
   }
+  const save=document.createElement('button');save.className='save-markdown';save.textContent='.md 저장';save.setAttribute('aria-label',label+' Markdown 저장');save.disabled=result.status!=='done';
+  save.onclick=()=>send({action:'export',filename:names[provider]+(reviewing?' 피드백.md':' 문서.md'),text:DualLensUI.documentText(result.text)});
+  article.querySelector('.card-head').append(save);
   article.querySelector('.copy').onclick=()=>{send({action:'copy',text:DualLensUI.answerText(result)});toast('복사했습니다.');};
   return article;
 }
@@ -340,7 +345,7 @@ function render(){
     const heading=document.createElement('div');
     if(round.kind==='feedback'){
       heading.className='feedback-label';heading.textContent='⇄ 피드백';
-      const note=document.createElement('small');note.textContent='각 모델의 당시 최신 답변 검토';heading.append(note);
+      const note=document.createElement('small');note.textContent=round.reviewMode==='peer'?'상대 답변 검토, 원래 답변은 위에 유지됩니다.':'각 모델의 당시 최신 답변 검토';heading.append(note);
     }else{
       heading.className='user-message';
       const label=document.createElement('small');label.textContent='나 → '+names[round.target];
@@ -514,7 +519,7 @@ $('export').onclick=()=>{
   let text='# '+(r.title||r.question)+'\n';
   for(const round of r.rounds){
     text+='\n## '+(round.kind==='feedback'?'피드백':'나 → '+names[round.target])+ '\n\n'+round.question+'\n';
-    for(const p of ['gpt','claude'])if(round.answers[p])text+='\n### '+names[p]+'\n\n'+DualLensUI.answerText(round.answers[p])+'\n';
+    for(const p of ['gpt','claude'])if(round.answers[p])text+='\n### '+(round.reviewMode==='peer'?names[p]+' → '+names[p==='gpt'?'claude':'gpt']+' 답변 검토':names[p])+'\n\n'+DualLensUI.answerText(round.answers[p])+'\n';
   }
   send({action:'export',text});
 };
