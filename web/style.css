@@ -46,7 +46,7 @@
 .project-tree-actions{display:flex;align-items:center}
 .sidebar #projects .project-tree-actions button{width:auto;margin:0;padding:6px;font-size:10px;color:var(--green)}
 .sidebar #projects .project-tree-actions button:last-child{margin-left:auto}
-#chat-menu{position:fixed;z-index:10;min-width:160px;background:#fff;border:1px solid #d9e1d5;border-radius:9px;padding:5px;box-shadow:0 7px 28px #19342626}
+.menu-status{font-size:11px;color:var(--muted);padding:5px 9px;max-width:180px;line-height:1.6;margin:0}#chat-menu{position:fixed;z-index:10;min-width:160px;background:#fff;border:1px solid #d9e1d5;border-radius:9px;padding:5px;box-shadow:0 7px 28px #19342626}
 #chat-menu button{display:block;width:100%;padding:9px 12px;text-align:left;font-size:12px;border-radius:5px}
 #rename-title{width:100%;padding:10px;margin:8px 0;border:1px solid var(--line);border-radius:8px;background:white;color:inherit}
 #composer #question{display:block;outline:none;box-shadow:none;border:1px solid #e3e9e0;border-radius:9px;margin:14px 0 10px;padding:12px;min-height:82px;max-height:min(220px,25vh)}

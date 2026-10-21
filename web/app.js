@@ -58,20 +58,28 @@ function selectChat(id){
 }
 function closeChatMenu(restoreFocus=false){
   $('chat-menu').hidden=true;$('project-menu').hidden=true;menuChatId=null;menuProjectId=null;
-  if(restoreFocus&&menuOrigin?.isConnected)menuOrigin.focus();
+  if(restoreFocus&&menuOrigin?.isConnected)menuOrigin.focus({preventScroll:true});
   menuOrigin=null;
 }
 function openMenu(event,id,origin,kind){
   event.preventDefault();event.stopPropagation();
-  if(busy())return;closeChatMenu();
+  closeChatMenu();
   if(kind==='chat')menuChatId=id;else menuProjectId=id;
   menuOrigin=origin;
-  const menu=$(kind+'-menu');menu.hidden=false;
+  const menu=$(kind+'-menu');menu.hidden=false;updateContextMenus();
   const rect=origin.getBoundingClientRect(),keyboard=event.type==='keydown';
   const x=keyboard?rect.left:event.clientX,y=keyboard?rect.bottom:event.clientY;
   menu.style.left=Math.max(8,Math.min(x,window.innerWidth-menu.offsetWidth-8))+'px';
   menu.style.top=Math.max(8,Math.min(y,window.innerHeight-menu.offsetHeight-8))+'px';
-  $('rename-'+kind).focus();
+  (menu.querySelector('button:not(:disabled)')||menu).focus({preventScroll:true});
+}
+function updateContextMenus(){
+  const locked=busy();
+  for(const kind of ['chat','project']){
+    const menu=$(kind+'-menu');
+    for(const button of menu.querySelectorAll('button'))button.disabled=locked;
+    menu.querySelector('.menu-status').hidden=!locked;
+  }
 }
 function openChatMenu(event,r,origin){openMenu(event,r.id,origin,'chat');}
 function chatRow(r,nested=false){
@@ -84,7 +92,7 @@ function chatRow(r,nested=false){
   b.append(title,small);b.onclick=()=>selectChat(r.id);
   b.onkeydown=e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))openChatMenu(e,r,b);};
   row.oncontextmenu=e=>openChatMenu(e,r,b);
-  const more=document.createElement('button');more.className='chat-more';more.textContent='⋯';more.setAttribute('aria-label',(r.title||r.question)+' 채팅 메뉴');more.setAttribute('aria-haspopup','menu');more.disabled=busy();
+  const more=document.createElement('button');more.className='chat-more';more.textContent='⋯';more.setAttribute('aria-label',(r.title||r.question)+' 채팅 메뉴');more.setAttribute('aria-haspopup','menu');
   more.onclick=()=>{openChatMenu({type:'keydown',preventDefault(){},stopPropagation(){}},r,more);};
   row.append(b,more);return row;
 }
@@ -295,7 +303,7 @@ function render(){
     const head=document.createElement('div');head.className='project-head';
     b.oncontextmenu=e=>openMenu(e,project.id,b,'project');
     b.onkeydown=e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))openMenu(e,project.id,b,'project');};
-    const more=document.createElement('button');more.className='project-more';more.textContent='⋯';more.disabled=locked;more.setAttribute('aria-label',project.name+' 프로젝트 메뉴');more.setAttribute('aria-haspopup','menu');
+    const more=document.createElement('button');more.className='project-more';more.textContent='⋯';more.setAttribute('aria-label',project.name+' 프로젝트 메뉴');more.setAttribute('aria-haspopup','menu');
     more.onclick=()=>openMenu({type:'keydown',preventDefault(){},stopPropagation(){}},project.id,more,'project');
     head.append(b,more);section.append(head);
     if(expandedProjects.has(project.id)){
@@ -310,7 +318,8 @@ function render(){
     }
     $('projects').append(section);
   }
-  if(busy()||(menuChatId&&!state.history.some(r=>r.id===menuChatId)))closeChatMenu();
+  updateContextMenus();
+  if((menuChatId&&!state.history.some(r=>r.id===menuChatId))||(menuProjectId&&!state.projects.some(p=>p.id===menuProjectId)))closeChatMenu();
   const project=currentProject();
   $('all-chats').className=!showArchive?'active':'';$('archive-view').className=showArchive?'active':'';
   $('new-project').disabled=locked;$('project-settings').hidden=!project;$('project-settings').disabled=locked;
@@ -419,14 +428,17 @@ $('rename-form').onsubmit=e=>{
   else if(renamingChatId)send({action:'chat-update',id:renamingChatId,title});
 };
 document.addEventListener('pointerdown',e=>{if(!$('chat-menu').contains(e.target)&&!$('project-menu').contains(e.target))closeChatMenu();});
-document.addEventListener('scroll',e=>{if(!$('chat-menu').contains(e.target)&&!$('project-menu').contains(e.target))closeChatMenu();},true);
+document.addEventListener('scroll',e=>{
+  // Only movement of the menu's anchor invalidates its position.
+  if(menuOrigin && (e.target===document || (e.target instanceof Element && e.target.contains(menuOrigin))))closeChatMenu();
+},true);
 window.addEventListener('resize',()=>closeChatMenu());
 for(const menu of [$('chat-menu'),$('project-menu')])menu.onkeydown=e=>{
-  const buttons=Array.from(menu.querySelectorAll('button'));
+  const buttons=Array.from(menu.querySelectorAll('button:not(:disabled)'));
   if(e.key==='Escape'){e.preventDefault();closeChatMenu(true);}
   else if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
-    e.preventDefault();const i=buttons.indexOf(document.activeElement);
-    buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length].focus();
+    e.preventDefault();if(!buttons.length)return;const i=buttons.indexOf(document.activeElement);
+    buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length].focus({preventScroll:true});
   }else if(e.key==='Tab')closeChatMenu();
 };
 $('project-new-chat').onclick=()=>{const project=currentProject();if(project){switchScope(project.id);$('question').focus();}};

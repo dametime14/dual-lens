@@ -47,12 +47,13 @@
   </div>
 </main>
 <div id="toast" role="status" hidden></div>
-<div id="chat-menu" role="menu" aria-label="채팅 메뉴" hidden>
+<div id="chat-menu" role="menu" aria-label="채팅 메뉴" tabindex="-1" hidden>
+  <p class="menu-status" hidden>작업이 끝나면 변경할 수 있습니다.</p>
   <button id="rename-chat" role="menuitem">이름 변경</button>
   <button id="manage-chat" role="menuitem">채팅 설정</button>
   <button id="delete-chat" role="menuitem" class="danger">삭제</button>
 </div>
-<div id="project-menu" role="menu" aria-label="프로젝트 메뉴" hidden><button id="rename-project" role="menuitem">이름 변경</button><button id="manage-project" role="menuitem">프로젝트 설정</button></div>
+<div id="project-menu" role="menu" aria-label="프로젝트 메뉴" tabindex="-1" hidden><p class="menu-status" hidden>작업이 끝나면 변경할 수 있습니다.</p><button id="rename-project" role="menuitem">이름 변경</button><button id="manage-project" role="menuitem">프로젝트 설정</button></div>
 <dialog id="rename-dialog">
   <div class="dialog-heading"><h2 id="rename-dialog-title">채팅 이름 변경</h2><button data-close="rename-dialog" aria-label="닫기">✕</button></div>
   <form id="rename-form"><label id="rename-label" for="rename-title">채팅 이름</label><input id="rename-title" maxlength="120" required><div class="dialog-actions"><button type="button" data-close="rename-dialog">취소</button><button id="save-rename" type="submit" class="primary">저장</button></div></form>
