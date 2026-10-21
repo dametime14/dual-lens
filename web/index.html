@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none';">
+<title>Dual Lens</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<aside id="sidebar" class="sidebar">
+  <div class="brand"><img src="logo.svg" width="36" height="36" alt="Dual Lens 로고"><span>Dual Lens</span><button id="sidebar-toggle" aria-label="사이드바 접기" title="사이드바 접기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button></div>
+  <button id="new" class="new-button">＋ 새 채팅 <kbd>⌘ N</kbd></button>
+  <input id="search" type="search" placeholder="대화 검색" aria-label="대화 검색">
+  <div class="library-scroll">
+    <div class="sidebar-label">프로젝트 <button id="new-project" aria-label="프로젝트 만들기">＋</button></div>
+    <nav id="projects" aria-label="프로젝트 목록"></nav>
+    <div class="chats-heading"><h2 class="sidebar-section-title">채팅</h2><button id="new-chat" aria-label="새 일반 채팅" title="새 채팅">＋</button></div>
+    <div class="chat-filters"><button id="all-chats" class="active">전체 대화</button><button id="archive-view">보관함</button></div>
+    <nav id="history" aria-label="대화 목록"></nav>
+  </div>
+  <section class="sidebar-settings" aria-labelledby="sidebar-settings-title">
+    <h2 id="sidebar-settings-title" class="sidebar-section-title">설정</h2>
+    <div class="settings-panel">
+      <button id="model-settings" class="settings-link model-settings-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>모델 설정<small>모델 선택 · 생각 강도</small></span><span class="nav-chevron" aria-hidden="true">›</span></button>
+      <button id="accounts" class="settings-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span>계정 연결</span><span class="nav-chevron" aria-hidden="true">›</span></button>
+    </div>
+    <button id="help" class="sidebar-help"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 1.5-2.5 2-2.5 3.5m0 3h.01"/></svg><span>사용법</span></button>
+    <button id="storage" class="storage-button"><span id="storage-label">이번 실행만 유지</span><small id="storage-size"></small></button>
+  </section>
+</aside>
+<div id="sidebar-resize" role="separator" tabindex="0" aria-label="사이드바 너비" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="236" title="드래그해서 너비 조절 · 방향키로도 조절"></div>
+<button id="sidebar-open" aria-label="사이드바 열기" title="사이드바 열기" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m4-11 3 3-3 3"/></svg></button>
+<main id="workspace" class="home">
+  <header><div class="title-block"><span id="project-breadcrumb"></span><span id="chat-title">새 대화</span></div><div class="header-actions"><button id="project-new-chat" hidden>＋ 프로젝트 채팅</button><button id="project-settings" hidden>Project settings</button><button id="context">Context</button><button id="export">Export</button><button id="chat-settings" aria-label="Settings">Settings</button><button id="check">연결 확인</button></div></header>
+  <div id="scroll" class="main-scroll">
+    <div id="timeline" aria-label="대화"></div>
+  </div>
+  <div id="running" hidden><span class="spinner"></span><span id="running-label">답변 작성 중</span><button id="cancel">중지</button></div>
+  <div id="compose-area">
+  <h1 id="welcome">무엇을 물어볼까요?</h1>
+  <section id="composer" aria-label="메시지 작성">
+    <div class="composer-top"><div id="targets" role="group" aria-label="받는 모델"><button data-target="both" aria-pressed="true">GPT + Claude</button><button data-target="gpt" aria-pressed="false"><img src="gpt.svg" alt="">GPT</button><button data-target="claude" aria-pressed="false"><img src="claude.svg" alt="">Claude</button></div><button id="feedback" title="각 모델의 최신 답변을 서로 전달합니다. 입력한 질문은 보내지 않습니다.">⇄ 피드백</button></div>
+    <div class="current-models" aria-label="선택한 모델과 생각 강도">
+      <div class="composer-model"><img src="gpt.svg" alt="GPT"><select id="quick-model-gpt" aria-label="GPT 모델" title="GPT 모델"></select><select id="quick-effort-gpt" aria-label="GPT 생각 강도" title="GPT 생각 강도"></select></div>
+      <div class="composer-model"><img src="claude.svg" alt="Claude"><select id="quick-model-claude" aria-label="Claude 모델" title="Claude 모델"></select><select id="quick-effort-claude" aria-label="Claude 생각 강도" title="Claude 생각 강도"></select></div>
+    </div>
+    <textarea id="question" rows="2" maxlength="16000" aria-label="메시지" placeholder="메시지 입력"></textarea>
+    <div class="composer-bottom"><button id="ask" class="primary" title="보내기 (⌘ Enter)"><span aria-hidden="true">↑</span> 보내기</button></div>
+  </section>
+  </div>
+</main>
+<div id="toast" role="status" hidden></div>
+<div id="chat-menu" role="menu" aria-label="채팅 메뉴" hidden>
+  <button id="rename-chat" role="menuitem">이름 변경</button>
+  <button id="manage-chat" role="menuitem">채팅 설정</button>
+</div>
+<div id="project-menu" role="menu" aria-label="프로젝트 메뉴" hidden><button id="rename-project" role="menuitem">이름 변경</button><button id="manage-project" role="menuitem">프로젝트 설정</button></div>
+<dialog id="rename-dialog">
+  <div class="dialog-heading"><h2 id="rename-dialog-title">채팅 이름 변경</h2><button data-close="rename-dialog" aria-label="닫기">✕</button></div>
+  <form id="rename-form"><label id="rename-label" for="rename-title">채팅 이름</label><input id="rename-title" maxlength="120" required><div class="dialog-actions"><button type="button" data-close="rename-dialog">취소</button><button id="save-rename" type="submit" class="primary">저장</button></div></form>
+</dialog>
+<dialog id="help-dialog">
+  <div class="dialog-heading"><h2>사용법</h2><button data-close="help-dialog" aria-label="닫기">✕</button></div>
+  <dl class="help-list">
+    <dt>모델과 생각 강도</dt><dd>입력창 위 드롭다운에서 바로 선택합니다. 각 모델의 설정은 따로 저장되며 다음 요청부터 적용됩니다.</dd>
+    <dt>메시지 보내기</dt><dd>GPT + Claude, GPT, Claude 중 받는 모델을 선택하고 <strong>↑ 보내기</strong>를 누릅니다. <kbd>⌘ Enter</kbd>도 사용할 수 있습니다.</dd>
+    <dt>피드백</dt><dd>두 모델의 답변이 완료되면 <strong>피드백</strong>을 누릅니다. 각 모델의 최신 답변과 해당 질문을 서로 전달합니다. 입력 중인 메시지는 보내지 않습니다.</dd>
+    <dt>이어서 대화하기</dt><dd>같은 입력창에서 공통 질문이나 개별 질문을 계속 보냅니다. 개별 질문은 선택한 모델에게만 전달됩니다.</dd>
+    <dt>사이드바</dt><dd>오른쪽 경계를 드래그해 너비를 조절합니다. 상단 접기 버튼으로 숨기고 왼쪽 열기 버튼으로 다시 표시합니다. 너비와 접힘 상태는 다음 실행에도 유지됩니다.</dd>
+    <dt>프로젝트</dt><dd>프로젝트 이름을 우클릭하거나 <strong>⋯ → 이름 변경</strong>으로 이름을 바꿉니다. 왼쪽 <strong>프로젝트 +</strong>에서 프로젝트를 만들고 지침과 참고 문맥을 설정합니다. 프로젝트 이름을 눌러 펼친 뒤 안의 <strong>＋ 새 채팅</strong>을 누릅니다. 프로젝트를 펼쳐도 아래 전체 대화 목록은 바뀌지 않습니다. 왼쪽 <strong>＋ 새 채팅</strong>은 항상 프로젝트 없이 시작합니다.</dd>
+    <dt>폴더 자료</dt><dd><strong>Project settings → 폴더 가져오기</strong>에서 폴더를 선택하고 포함할 파일을 확인한 뒤 저장합니다. 질문 아래에서 실제 전달한 자료를 펼쳐 볼 수 있습니다. 큰 자료는 관련 구간만 전달하며 원본 변경은 다시 가져와야 반영됩니다.</dd>
+    <dt>모델 설정</dt><dd>왼쪽 <strong>모델 설정</strong>에서 GPT와 Claude를 각각 선택합니다. 저장한 선택은 다음 요청부터 적용됩니다. 답변에는 실제 보고된 모델 또는 요청한 모델이 표시됩니다.</dd>
+    <dt>계정 연결</dt><dd>왼쪽 <strong>계정 연결</strong>에서 필요한 도구를 설치하고 공식 로그인을 엽니다. 로그인 후 <strong>연결 확인</strong>을 누릅니다.</dd>
+    <dt>대화 정리</dt><dd>채팅을 우클릭하거나 <strong>⋯ → 이름 변경</strong>을 누릅니다. <strong>채팅 설정</strong> 또는 상단 <strong>Settings</strong>에서는 프로젝트 이동, 고정, 보관도 할 수 있습니다. 왼쪽 검색창에서 제목과 본문을 검색합니다.</dd>
+    <dt>문맥과 저장</dt><dd>긴 대화는 모델별로 요약합니다. 중요한 조건은 <strong>Context</strong>에서 고정할 수 있습니다. 프로젝트와 대화는 Mac에 텍스트로 최대 20MB 저장합니다. 저장 방식은 왼쪽 아래에서 변경합니다.</dd>
+  </dl>
+</dialog>
+<dialog id="context-dialog"><div class="dialog-heading"><h2>문맥</h2><button data-close="context-dialog" aria-label="닫기">✕</button></div><p>오래된 대화는 모델별로 요약하고 최근 대화는 원문으로 전달합니다. 요약에는 누락이 생길 수 있습니다.</p><label for="pinned">항상 기억할 내용 · 두 모델에게 전달</label><textarea id="pinned" rows="3" maxlength="4000" placeholder="꼭 유지할 조건, 결정, 수치"></textarea><button id="save-pin" class="primary">고정 내용 저장</button><div class="memory-grid"><section><h3>GPT</h3><pre id="memory-gpt"></pre></section><section><h3>Claude</h3><pre id="memory-claude"></pre></section></div><p class="muted">요약도 기존 구독 사용량을 사용합니다. 대화 원문과 요약은 별도로 관리합니다.</p></dialog>
+<dialog id="storage-dialog"><div class="dialog-heading"><h2>대화 저장</h2><button data-close="storage-dialog" aria-label="닫기">✕</button></div><p>이 앱의 대화는 ChatGPT·Claude 웹 채팅 목록과 동기화되지 않습니다.</p><label class="choice"><input type="radio" name="storage-mode" value="session"><span>이번 실행만 유지<small>앱을 종료하면 대화가 사라집니다. 기존 앱 저장 파일도 삭제합니다.</small></span></label><label class="choice"><input type="radio" name="storage-mode" value="local"><span>Mac에 보관<small>텍스트만 저장 · 최대 20MB. 한도에 도달하면 추가 저장을 멈춥니다.</small></span></label><p id="saved-detail" class="muted"></p><button id="save-storage" class="primary">적용</button></dialog>
+<dialog id="models-dialog">
+  <div class="dialog-heading"><h2>모델 설정</h2><button data-close="models-dialog" aria-label="닫기">✕</button></div>
+  <div class="model-settings-grid">
+    <section><h3><img class="provider-logo" src="gpt.svg" alt="">GPT</h3><label for="model-gpt">모델</label><select id="model-gpt"></select><label for="effort-gpt">생각 강도</label><select id="effort-gpt"></select></section>
+    <section><h3><img class="provider-logo" src="claude.svg" alt="">Claude</h3><label for="model-claude">모델</label><select id="model-claude"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option></select><label for="effort-claude">생각 강도</label><select id="effort-claude"></select></section>
+  </div>
+  <p id="model-list-status" role="status"></p>
+  <p>이 앱의 모든 대화에서 다음 질문·피드백·문맥 요약부터 적용됩니다. 실패한 답변을 다시 시도할 때는 당시 선택을 유지합니다.</p>
+  <p class="muted">선택한 모델 버전을 지정해 요청합니다. 생각 강도의 기본값은 모델에 따라 다르며, 높은 강도는 시간과 구독 사용량을 더 쓸 수 있습니다. 계정의 접근 권한과 서비스의 모델 전환 정책이 적용됩니다.</p>
+  <div class="dialog-actions"><button id="refresh-models">GPT 목록 새로고침</button><button id="save-models" class="primary">저장</button></div>
+</dialog>
+<dialog id="connection-dialog"><div class="dialog-heading"><h2>계정 연결</h2><button data-close="connection-dialog" aria-label="닫기">✕</button></div>
+  <p>이 Mac에 설치된 공식 도구를 사용합니다. 로그인은 각 서비스가 연 브라우저에서 완료합니다.</p>
+  <div id="runtime-setup" class="setup-row" hidden><div><strong>실행 환경</strong><p id="runtime-detail"></p></div><button data-guide="node">Node.js 설치 안내</button><button id="retry-runtime">설치 후 다시 확인</button></div>
+  <div class="setup-row"><div><strong>ChatGPT</strong><p id="setup-gpt">설치 확인 중</p></div><button data-guide="gpt">설치 안내</button><button data-login="gpt">공식 로그인 열기</button></div>
+  <div class="setup-row"><div><strong>Claude</strong><p id="setup-claude">설치 확인 중</p></div><button data-guide="claude">설치 안내</button><button data-login="claude">공식 로그인 열기</button></div>
+  <p id="python-setup" hidden>Claude 사용량 확인에 Python 3가 필요합니다. <button data-guide="python">설치 안내</button></p>
+  <p>ChatGPT·Claude 구독 계정을 선택하세요. 로그인 정보는 공식 도구가 관리하며, 같은 Mac의 해당 도구와 계정을 공유합니다.</p>
+  <pre id="connection-detail"></pre>
+  <p class="muted">매 요청 전 구독과 유료 추가 사용 설정을 확인합니다.</p>
+  <div class="dialog-actions"><button id="check-connections" class="primary">연결 확인</button></div>
+</dialog>
+<dialog id="delete-dialog"><h2>이 대화를 삭제할까요?</h2><p>질문, 답변, 문맥 요약이 함께 삭제됩니다.</p><div class="dialog-actions"><button data-close="delete-dialog">취소</button><button id="delete-confirm" class="primary">삭제</button></div></dialog>
+<dialog id="project-dialog">
+  <div class="dialog-heading"><h2 id="project-dialog-title">새 프로젝트</h2><button data-close="project-dialog" aria-label="닫기">✕</button></div>
+  <label for="project-name">프로젝트 이름</label><input id="project-name" maxlength="80" placeholder="예: 글쓰기, 사업 기획">
+  <label for="project-instructions">답변 지침 <span class="field-limit">최대 4,000자</span></label><textarea id="project-instructions" rows="3" maxlength="4000" placeholder="답변 방식, 역할, 꼭 지킬 조건"></textarea>
+  <div class="field-row"><label for="project-context">참고 문맥 <span class="field-limit">최대 16,000자</span></label><button id="import-context">텍스트 파일 추가</button></div><textarea id="project-context" rows="6" maxlength="16000" placeholder="배경 정보, 용어, 확정된 사실이나 자료"></textarea>
+  <div class="field-row"><label>프로젝트 파일 <span class="field-limit">최대 200개 · 1MB</span></label><button id="import-folder">폴더 가져오기</button></div>
+  <p id="folder-status" class="muted"></p><div id="project-files" class="file-list"></div>
+  <p class="muted">텍스트·코드·PDF 텍스트를 저장합니다. 체크한 파일만 저장되며, 질문 시 관련 구간을 선택한 모델에 보냅니다. 원본 변경은 다시 가져와야 반영됩니다.</p>
+  <p class="muted">이 프로젝트의 두 모델에게 매 요청마다 적용됩니다. 다른 대화 기록은 자동으로 공유하지 않습니다.</p>
+  <div class="dialog-actions"><button id="delete-project" class="danger" hidden>프로젝트 삭제</button><button id="save-project" class="primary">저장</button></div>
+</dialog>
+<dialog id="chat-dialog">
+  <div class="dialog-heading"><h2>대화 설정</h2><button data-close="chat-dialog" aria-label="닫기">✕</button></div>
+  <label for="chat-name">대화 이름</label><input id="chat-name" maxlength="120">
+  <label for="chat-project">프로젝트</label><select id="chat-project"></select>
+  <label class="check-label"><input id="chat-starred" type="checkbox">목록 상단에 고정</label>
+  <label class="check-label"><input id="chat-archived" type="checkbox">보관함으로 이동</label>
+  <div class="dialog-actions"><button id="delete" class="danger">대화 삭제</button><button id="save-chat" class="primary">저장</button></div>
+</dialog>
+<dialog id="delete-project-dialog"><h2>프로젝트를 삭제할까요?</h2><p>프로젝트 지침과 참고 문맥이 삭제됩니다. 대화는 삭제하지 않고 전체 대화에 남깁니다.</p><div class="dialog-actions"><button data-close="delete-project-dialog">취소</button><button id="delete-project-confirm" class="primary">프로젝트 삭제</button></div></dialog>
+<script src="app.js"></script></body></html>
