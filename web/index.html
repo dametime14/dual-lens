@@ -27,13 +27,14 @@
 <div id="sidebar-resize" role="separator" tabindex="0" aria-label="사이드바 너비" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="236" title="드래그해서 너비 조절, 방향키로도 조절"></div>
 <button id="sidebar-open" aria-label="사이드바 열기" title="사이드바 열기" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m4-11 3 3-3 3"/></svg></button>
 <main id="workspace" class="home">
-  <header><div class="title-block"><span id="project-breadcrumb"></span><span id="chat-title">새 대화</span></div><div class="header-actions"><button id="project-new-chat" hidden>＋ 프로젝트 채팅</button><button id="project-settings" hidden>Project settings</button><button id="context">Context</button><button id="export">Export</button><button id="chat-settings" aria-label="Settings">Settings</button><button id="check">연결 확인</button></div></header>
+  <header><div class="title-block"><span id="project-breadcrumb"></span><span id="chat-title">새 대화</span></div><div class="header-actions"><label class="reading-control">문단 간격<select id="paragraph-spacing" aria-label="문단 간격"><option value="compact">좁게</option><option value="normal">보통</option><option value="relaxed">넓게</option></select></label><button id="project-new-chat" hidden>＋ 프로젝트 채팅</button><button id="project-settings" hidden>Project settings</button><button id="context">Context</button><button id="export">Export</button><button id="chat-settings" aria-label="Settings">Settings</button><button id="check">연결 확인</button></div></header>
   <div id="answer-views" role="tablist" aria-label="답변 보기" hidden><button id="view-gpt" role="tab" data-answer-view="gpt" aria-selected="true" aria-controls="timeline"><img src="gpt.svg" alt="">GPT</button><button id="view-claude" role="tab" data-answer-view="claude" aria-selected="false" aria-controls="timeline" tabindex="-1"><img src="claude.svg" alt="">Claude</button><button id="view-both" role="tab" data-answer-view="both" aria-selected="false" aria-controls="timeline" tabindex="-1">나란히</button></div>
   <div id="scroll" class="main-scroll">
     <div id="timeline" role="tabpanel" aria-labelledby="view-gpt" tabindex="0"></div>
   </div>
   <div id="running" hidden><span class="spinner"></span><span id="running-label">답변 작성 중</span><button id="cancel">중지</button></div>
   <div id="compose-area">
+  <div class="compose-controls"><button id="composer-toggle" aria-controls="composer" aria-expanded="true" hidden>⌄ 입력창 접기</button></div>
   <h1 id="welcome">무엇을 물어볼까요?</h1>
   <section id="composer" aria-label="메시지 작성">
     <div class="composer-top"><div id="targets" role="group" aria-label="받는 모델"><button data-target="both" aria-pressed="true">GPT + Claude</button><button data-target="gpt" aria-pressed="false"><img src="gpt.svg" alt="">GPT</button><button data-target="claude" aria-pressed="false"><img src="claude.svg" alt="">Claude</button></div><button id="feedback" title="각 모델의 최신 답변을 서로 전달합니다. 입력한 질문은 보내지 않습니다.">⇄ 피드백</button></div>
@@ -63,6 +64,7 @@
   <dl class="help-list">
     <dt>모델과 생각 강도</dt><dd>입력창 위 드롭다운에서 바로 선택합니다. 각 모델의 설정은 따로 저장되며 다음 요청부터 적용됩니다.</dd>
     <dt>메시지 보내기</dt><dd>GPT + Claude, GPT, Claude 중 받는 모델을 선택하고 <strong>↑ 보내기</strong>를 누릅니다. <kbd>Enter</kbd>로 전송하고 <kbd>Shift+Enter</kbd>로 줄바꿈합니다. 한글 입력을 확정하는 Enter는 전송하지 않습니다.</dd>
+    <dt>읽기 설정</dt><dd>상단의 문단 간격에서 좁게, 보통, 넓게를 선택합니다. 입력창 위의 접기 버튼으로 답변 영역을 넓히고, 하단의 입력창 열기로 다시 펼칩니다. 작성 중인 메시지는 유지됩니다. 두 설정은 다음 실행에도 적용됩니다.</dd>
     <dt>답변 보기</dt><dd>GPT, Claude 탭으로 답변을 읽습니다. 두 답변을 함께 비교하려면 <strong>나란히</strong>를 선택합니다. 이 선택은 메시지를 받는 모델 설정과 별개입니다.</dd>
     <dt>웹 검색과 출처</dt><dd>공개 사실을 묻는 질문과 피드백은 두 모델의 웹 도구로 확인합니다. 본문 링크와 답변 아래 검색 자료를 클릭해 출처를 엽니다. 검색하지 않았거나 실패하면 따로 표시합니다. 검색도 기존 구독 사용량을 쓰며, 별도 API로 전환하지 않습니다. 검색어와 조회 URL은 검색 서비스로 전달됩니다.</dd>
     <dt>링크와 그림</dt><dd>웹 링크는 기본 브라우저에서 엽니다. 그림 생성과 실행형 결과물 미리보기는 지원하지 않습니다. 이미지 주소는 링크로 표시합니다.</dd>

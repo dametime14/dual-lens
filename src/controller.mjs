@@ -40,6 +40,7 @@ export class Controller {
     this.efforts={gpt:'',claude:''};
     this.modelCatalog=[];
     this.layout={sidebarWidth:236,sidebarCollapsed:false};
+    this.reading={paragraphSpacing:'compact',composerCollapsed:false};
     this.contextOptions = dependencies.contextOptions || {};
     this.history = [];
     this.projects = [];
@@ -52,6 +53,7 @@ export class Controller {
     try {
       const saved=JSON.parse(readFileSync(this.settingsFile,'utf8'));
       if (['session','local'].includes(saved.storage)) this.storage=saved.storage;
+      if(['compact','normal','relaxed'].includes(saved.reading?.paragraphSpacing)&&typeof saved.reading.composerCollapsed==='boolean')this.reading={paragraphSpacing:saved.reading.paragraphSpacing,composerCollapsed:saved.reading.composerCollapsed};
       if(saved.models)this.models=validateModels(saved.models);
       if(saved.efforts)this.efforts=validateEfforts(saved.efforts);
       if(Number.isInteger(saved.layout?.sidebarWidth)&&saved.layout.sidebarWidth>=220&&saved.layout.sidebarWidth<=420&&typeof saved.layout.sidebarCollapsed==='boolean')this.layout=saved.layout;
@@ -64,7 +66,7 @@ export class Controller {
     }
   }
   saveSettings(models=this.models,efforts=this.efforts) {
-    writeFileSync(this.settingsFile+'.tmp',JSON.stringify({storage:this.storage,models,efforts,layout:this.layout}),{mode:0o600});
+    writeFileSync(this.settingsFile+'.tmp',JSON.stringify({storage:this.storage,models,efforts,layout:this.layout,reading:this.reading}),{mode:0o600});
     renameSync(this.settingsFile+'.tmp',this.settingsFile);
   }
   recover() {
@@ -90,12 +92,19 @@ export class Controller {
   }
   publish() {
     this.emit({type:'state',history:this.history,projects:this.projects,active:this.active ? {id:this.active.id,roundId:this.active.roundId,stage:this.active.stage}:null,
-      layout:this.layout,connections:this.connections,models:this.models,efforts:this.efforts,modelCatalog:this.modelCatalog,storage:this.storage,savedBytes:existsSync(this.file)?statSync(this.file).size:0,
+      reading:this.reading,layout:this.layout,connections:this.connections,models:this.models,efforts:this.efforts,modelCatalog:this.modelCatalog,storage:this.storage,savedBytes:existsSync(this.file)?statSync(this.file).size:0,
       memoryBytes:Buffer.byteLength(JSON.stringify({history:this.history,projects:this.projects}))});
   }
   async dispatch(message) {
     switch (message.action) {
       case 'init': this.publish(); return;
+      case 'reading-save': {
+        const {paragraphSpacing,composerCollapsed}=message.reading||{};
+        if(!['compact','normal','relaxed'].includes(paragraphSpacing)||typeof composerCollapsed!=='boolean')throw new Error('읽기 설정이 올바르지 않습니다.');
+        const previous=this.reading;this.reading={paragraphSpacing,composerCollapsed};
+        try{this.saveSettings();}catch(error){this.reading=previous;throw error;}
+        this.publish();return;
+      }
       case 'layout-save': {
         const {sidebarWidth,sidebarCollapsed}=message.layout||{};
         if(!Number.isInteger(sidebarWidth)||sidebarWidth<220||sidebarWidth>420||typeof sidebarCollapsed!=='boolean')throw new Error('사이드바 설정이 올바르지 않습니다.');

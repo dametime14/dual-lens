@@ -38,6 +38,7 @@
         continue;
       }
       if(marker){fence=marker[1];continue;}
+      if(!line.trim())continue;
       const heading=line.match(/^#{1,6}\s+(.*)$/),bullet=line.match(/^\s*[-*]\s+(.*)$/);
       if(heading)output.push('<h4>'+inline(heading[1])+'</h4>');
       else if(bullet)output.push('<p class="bullet">'+inline(bullet[1])+'</p>');

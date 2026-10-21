@@ -8,6 +8,7 @@ const expandedProjects=new Set();
 let menuChatId=null,menuProjectId=null,menuOrigin=null,renamingChatId=null,renamingProjectId=null;
 let deletingChatId=null;
 let layout={sidebarWidth:236,sidebarCollapsed:false},resizeDrag=null;
+let reading={paragraphSpacing:'compact',composerCollapsed:false};
 let modelCatalog=[],modelsLoading=false,catalogRequested=false;
 const quickPending=new Set();
 const effortNames={low:'Low',medium:'Medium',high:'High',xhigh:'Extra high',max:'Max',ultra:'Ultra'};
@@ -241,6 +242,7 @@ window.receive=event=>{
   }
   if(event.type!=='state')return;
   state=event;
+  if(state.reading)reading={...state.reading};
   if(state.layout&&!resizeDrag){layout={...state.layout};applyLayout();}
   modelCatalog=state.modelCatalog||modelCatalog;
   if(!catalogRequested)refreshModels();
@@ -356,7 +358,7 @@ function render(){
     }
     section.append(grid);$('timeline').append(section);
   }
-  renderAnswerView();
+  renderAnswerView();applyReading();
   scroll.scrollTop=atBottom?scroll.scrollHeight:oldTop;
   const ready=Object.values(state.connections).length===2&&Object.values(state.connections).every(c=>c.status==='ready');
   $('check').textContent=locked&&!state.active?'연결 확인 중…':ready?'구독 연결됨':'연결 확인';
@@ -520,6 +522,22 @@ document.addEventListener('keydown',e=>{
   if(e.target!==$('question')&&e.metaKey&&DualLensUI.shouldSend(e)&&!document.querySelector('dialog[open]')){e.preventDefault();$('ask').click();}
   if(e.metaKey&&e.key.toLowerCase()==='n'&&!document.querySelector('dialog[open]')){e.preventDefault();$('new').click();}
 });
+function applyReading(){
+  document.documentElement.dataset.paragraphSpacing=reading.paragraphSpacing;
+  $('paragraph-spacing').value=reading.paragraphSpacing;
+  const collapsed=!!current()&&reading.composerCollapsed;
+  $('composer').hidden=collapsed;
+  $('composer-toggle').hidden=!current();
+  $('composer-toggle').textContent=collapsed?'⌃ 입력창 열기':'⌄ 입력창 접기';
+  $('composer-toggle').setAttribute('aria-expanded',String(!collapsed));
+  $('compose-area').classList.toggle('is-collapsed',collapsed);
+}
+function saveReading(){send({action:'reading-save',reading:{...reading}});}
+$('paragraph-spacing').onchange=()=>{reading.paragraphSpacing=$('paragraph-spacing').value;applyReading();saveReading();};
+$('composer-toggle').onclick=()=>{
+  reading.composerCollapsed=!reading.composerCollapsed;applyReading();saveReading();
+  if(!reading.composerCollapsed&&!$('question').disabled)$('question').focus({preventScroll:true});
+};
 function maxSidebarWidth(){return Math.max(220,Math.min(420,window.innerWidth-620));}
 function applyLayout(){
   const width=Math.min(layout.sidebarWidth,maxSidebarWidth());

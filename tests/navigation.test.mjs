@@ -27,6 +27,18 @@ test('renaming a project preserves its identity, instructions, files and chat me
   assert.equal(c.projects[0].name,'After');
 });
 
+test('reading preferences persist during generation without changing conversations',async t=>{
+  const {dir,c}=fixture(t);
+  assert.deepEqual(c.reading,{paragraphSpacing:'compact',composerCollapsed:false});
+  c.active={id:'active',roundId:'round',stage:'question'};
+  await c.dispatch({action:'reading-save',reading:{paragraphSpacing:'relaxed',composerCollapsed:true}});
+  assert.deepEqual(new Controller(dir,()=>{}).reading,{paragraphSpacing:'relaxed',composerCollapsed:true});
+  assert.equal(c.active.id,'active');assert.equal(c.history.length,0);
+  await c.dispatch({action:'layout-save',layout:{sidebarWidth:300,sidebarCollapsed:true}});
+  assert.equal(new Controller(dir,()=>{}).reading.composerCollapsed,true);
+  for(const reading of [{},{paragraphSpacing:'huge',composerCollapsed:true},{paragraphSpacing:'compact',composerCollapsed:'yes'}])await assert.rejects(c.dispatch({action:'reading-save',reading}));
+  assert.equal(c.reading.paragraphSpacing,'relaxed');
+});
 test('sidebar size and collapse persist without changing model choices and reject invalid values',async t=>{
   const {dir,c}=fixture(t);
   c.efforts={gpt:'high',claude:'max'};

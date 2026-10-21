@@ -25,6 +25,10 @@ test('Untrusted responses cannot create executable markup or load remote images'
   assert.match(markdown('![그림](https://example.org/image.png)'),/이미지 링크: 그림/);
   assert.doesNotMatch(markdown('![그림](https://example.org/image.png)'),/<img/);
 });
+test('blank prose lines do not create empty paragraphs; code spacing remains literal',()=>{
+  assert.equal(markdown('First\n\n\nSecond'),'<p>First</p><p>Second</p>');
+  assert.equal(markdown('~~~\nFirst\n\nSecond\n~~~'),'<pre><code>First\n\nSecond</code></pre>');
+});
 test('Code remains literal and never becomes a link or HTML',()=>{
   assert.equal(markdown('\x60https://example.org\x60'),'<p><code>https://example.org</code></p>');
   const code=markdown('~~~html\n<script>alert(1)</script>\nhttps://example.org\n~~~');
