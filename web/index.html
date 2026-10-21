@@ -28,8 +28,9 @@
 <button id="sidebar-open" aria-label="사이드바 열기" title="사이드바 열기" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m4-11 3 3-3 3"/></svg></button>
 <main id="workspace" class="home">
   <header><div class="title-block"><span id="project-breadcrumb"></span><span id="chat-title">새 대화</span></div><div class="header-actions"><button id="project-new-chat" hidden>＋ 프로젝트 채팅</button><button id="project-settings" hidden>Project settings</button><button id="context">Context</button><button id="export">Export</button><button id="chat-settings" aria-label="Settings">Settings</button><button id="check">연결 확인</button></div></header>
+  <div id="answer-views" role="tablist" aria-label="답변 보기" hidden><button id="view-gpt" role="tab" data-answer-view="gpt" aria-selected="true" aria-controls="timeline"><img src="gpt.svg" alt="">GPT</button><button id="view-claude" role="tab" data-answer-view="claude" aria-selected="false" aria-controls="timeline" tabindex="-1"><img src="claude.svg" alt="">Claude</button><button id="view-both" role="tab" data-answer-view="both" aria-selected="false" aria-controls="timeline" tabindex="-1">나란히</button></div>
   <div id="scroll" class="main-scroll">
-    <div id="timeline" aria-label="대화"></div>
+    <div id="timeline" role="tabpanel" aria-labelledby="view-gpt" tabindex="0"></div>
   </div>
   <div id="running" hidden><span class="spinner"></span><span id="running-label">답변 작성 중</span><button id="cancel">중지</button></div>
   <div id="compose-area">
@@ -41,7 +42,7 @@
       <div class="composer-model"><img src="claude.svg" alt="Claude"><select id="quick-model-claude" aria-label="Claude 모델" title="Claude 모델"></select><select id="quick-effort-claude" aria-label="Claude 생각 강도" title="Claude 생각 강도"></select></div>
     </div>
     <textarea id="question" rows="2" maxlength="16000" aria-label="메시지" placeholder="메시지 입력"></textarea>
-    <div class="composer-bottom"><button id="ask" class="primary" title="보내기 (⌘ Enter)"><span aria-hidden="true">↑</span> 보내기</button></div>
+    <div class="composer-bottom"><small class="send-hint">Enter 전송, Shift+Enter 줄바꿈</small><button id="ask" class="primary" title="보내기 (Enter)"><span aria-hidden="true">↑</span> 보내기</button></div>
   </section>
   </div>
 </main>
@@ -60,7 +61,9 @@
   <div class="dialog-heading"><h2>사용법</h2><button data-close="help-dialog" aria-label="닫기">✕</button></div>
   <dl class="help-list">
     <dt>모델과 생각 강도</dt><dd>입력창 위 드롭다운에서 바로 선택합니다. 각 모델의 설정은 따로 저장되며 다음 요청부터 적용됩니다.</dd>
-    <dt>메시지 보내기</dt><dd>GPT + Claude, GPT, Claude 중 받는 모델을 선택하고 <strong>↑ 보내기</strong>를 누릅니다. <kbd>⌘ Enter</kbd>도 사용할 수 있습니다.</dd>
+    <dt>메시지 보내기</dt><dd>GPT + Claude, GPT, Claude 중 받는 모델을 선택하고 <strong>↑ 보내기</strong>를 누릅니다. <kbd>Enter</kbd>로 전송하고 <kbd>Shift+Enter</kbd>로 줄바꿈합니다. 한글 입력을 확정하는 Enter는 전송하지 않습니다.</dd>
+    <dt>답변 보기</dt><dd>GPT, Claude 탭으로 답변을 읽습니다. 두 답변을 함께 비교하려면 <strong>나란히</strong>를 선택합니다. 이 선택은 메시지를 받는 모델 설정과 별개입니다.</dd>
+    <dt>링크와 그림</dt><dd>답변의 웹 링크는 기본 브라우저에서 엽니다. 링크를 실제로 조회하거나 검증한 것은 아닙니다. 현재 웹 검색, 그림 생성, 실행형 결과물 미리보기는 지원하지 않습니다. 이미지 주소는 링크로 표시합니다.</dd>
     <dt>피드백</dt><dd>두 모델의 답변이 완료되면 <strong>피드백</strong>을 누릅니다. 각 모델의 최신 답변과 해당 질문을 서로 전달합니다. 입력 중인 메시지는 보내지 않습니다.</dd>
     <dt>이어서 대화하기</dt><dd>같은 입력창에서 공통 질문이나 개별 질문을 계속 보냅니다. 개별 질문은 선택한 모델에게만 전달됩니다.</dd>
     <dt>사이드바</dt><dd>오른쪽 경계를 드래그해 너비를 조절합니다. 상단 접기 버튼으로 숨기고 왼쪽 열기 버튼으로 다시 표시합니다. 너비와 접힘 상태는 다음 실행에도 유지됩니다.</dd>
@@ -117,4 +120,4 @@
   <div class="dialog-actions"><button id="delete" class="danger">대화 삭제</button><button id="save-chat" class="primary">저장</button></div>
 </dialog>
 <dialog id="delete-project-dialog"><h2>프로젝트를 삭제할까요?</h2><p id="delete-project-summary"></p><p>프로젝트 지침, 자료와 소속 채팅을 모두 삭제합니다. 보관함의 채팅도 포함되며 되돌릴 수 없습니다.</p><div class="dialog-actions"><button data-close="delete-project-dialog">취소</button><button id="delete-project-confirm" class="primary">프로젝트 삭제</button></div></dialog>
-<script src="app.js"></script></body></html>
+<script src="message-utils.js"></script><script src="app.js"></script></body></html>

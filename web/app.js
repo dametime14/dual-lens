@@ -1,6 +1,7 @@
 const $=id=>document.getElementById(id);
 let state={history:[],projects:[],active:null,connections:{},storage:'local',savedBytes:0};
 let selected=null,target='both',awaiting=false,toastTimer,visibleRounds=20;
+let answerView='gpt',composing=false,compositionEndedAt=-Infinity;
 let scope='all',showArchive=false,editingProject=null,savingProject=false,searchTimer;
 const drafts=new Map();
 const expandedProjects=new Set();
@@ -21,13 +22,18 @@ function send(message){
 }
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,6500);}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function markdown(text){
-  return String(text).split('\n').map(line=>{
-    const safe=escapeHTML(line).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');
-    if(/^#{1,6} /.test(line))return '<h4>'+safe.replace(/^#{1,6} /,'')+'</h4>';
-    if(/^[-*] /.test(line))return '<p class="bullet">'+safe.slice(2)+'</p>';
-    return '<p>'+(safe||'<br>')+'</p>';
-  }).join('');
+const markdown=DualLensUI.markdown;
+function renderAnswerView(){
+  $('answer-views').hidden=!current();
+  for(const button of document.querySelectorAll('[data-answer-view]')){
+    const active=button.dataset.answerView===answerView;
+    button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;
+  }
+  $('timeline').setAttribute('aria-labelledby','view-'+answerView);
+  for(const grid of document.querySelectorAll('.answer-grid')){
+    grid.dataset.view=answerView;
+    for(const article of grid.children)article.hidden=answerView!=='both'&&article.dataset.provider!==answerView;
+  }
 }
 function current(){return state.history.find(r=>r.id===selected);}
 function currentProject(){const r=current(),id=r?r.projectId:(scope==='all'?null:scope);return state.projects.find(p=>p.id===id);}
@@ -236,7 +242,7 @@ window.receive=event=>{
 };
 function card(round,provider){
   const result=round.answers[provider];
-  const article=document.createElement('article');article.className='answer-card '+provider;
+  const article=document.createElement('article');article.className='answer-card '+provider;article.dataset.provider=provider;
   if(!result){article.className='skipped';article.textContent=names[provider]+'에게 보내지 않음';return article;}
   const status={checking:'연결 확인 중',running:'답변 작성 중',summarizing:'이전 대화 요약 중',error:'요청 실패',done:''}[result.status];
   article.innerHTML='<div class="card-head"><img class="provider-logo" src="'+provider+'.svg" alt=""><strong>'+names[provider]+'</strong><small>'+status+'</small><button class="copy" aria-label="'+names[provider]+' 답변 복사" '+(result.status==='done'?'':'disabled')+'>복사</button></div><div class="answer-content"></div>';
@@ -328,6 +334,7 @@ function render(){
     }
     section.append(grid);$('timeline').append(section);
   }
+  renderAnswerView();
   scroll.scrollTop=atBottom?scroll.scrollHeight:oldTop;
   const ready=Object.values(state.connections).length===2&&Object.values(state.connections).every(c=>c.status==='ready');
   $('check').textContent=locked&&!state.active?'연결 확인 중…':ready?'구독 연결됨':'연결 확인';
@@ -356,9 +363,25 @@ function render(){
     const memory=record.memory?.[p];$('memory-'+p).textContent=memory?.text?memory.compactions+'회 요약\n\n'+memory.text:'아직 요약하지 않았습니다. 원문을 전달합니다.';
   }
 }
+$('question').oncompositionstart=()=>{composing=true;};
+$('question').oncompositionend=e=>{composing=false;compositionEndedAt=e.timeStamp;};
+$('question').onkeydown=e=>{
+  if(!DualLensUI.shouldSend(e,composing,e.timeStamp-compositionEndedAt<60))return;
+  e.preventDefault();
+  if(!busy()&&!awaiting&&$('question').value.trim())$('ask').click();
+};
+for(const button of document.querySelectorAll('[data-answer-view]')){
+  button.onclick=()=>{answerView=button.dataset.answerView;renderAnswerView();};
+  button.onkeydown=e=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+    e.preventDefault();const views=['gpt','claude','both'],i=views.indexOf(answerView);
+    answerView=views[e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3];
+    renderAnswerView();$('view-'+answerView).focus();
+  };
+}
 $('question').oninput=()=>{$('ask').disabled=busy()||!$('question').value.trim();};
 $('ask').onclick=()=>{
-  if($('ask').disabled)return;awaiting=true;send({action:'ask',id:selected,projectId:scope==='all'?null:scope,question:$('question').value,target});
+  if($('ask').disabled||awaiting)return;if(target!=='both')answerView=target;renderAnswerView();awaiting=true;send({action:'ask',id:selected,projectId:scope==='all'?null:scope,question:$('question').value,target});
 };
 $('feedback').onclick=()=>{if(!$('feedback').disabled)send({action:'feedback',id:selected});};
 for(const b of document.querySelectorAll('[data-target]'))b.onclick=()=>{target=b.dataset.target;render();$('question').focus();};
@@ -469,7 +492,7 @@ $('export').onclick=()=>{
   send({action:'export',text});
 };
 document.addEventListener('keydown',e=>{
-  if(e.metaKey&&e.key==='Enter'&&!document.querySelector('dialog[open]')){e.preventDefault();$('ask').click();}
+  if(e.target!==$('question')&&e.metaKey&&DualLensUI.shouldSend(e)&&!document.querySelector('dialog[open]')){e.preventDefault();$('ask').click();}
   if(e.metaKey&&e.key.toLowerCase()==='n'&&!document.querySelector('dialog[open]')){e.preventDefault();$('new').click();}
 });
 function maxSidebarWidth(){return Math.max(220,Math.min(420,window.innerWidth-620));}

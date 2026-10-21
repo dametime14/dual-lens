@@ -92,8 +92,9 @@ test('subprocess cancellation terminates a process promptly',async t=>{
   const p=runProcess(process.execPath,['-e','setInterval(()=>{},1000)'],{cwd:dir,signal:abort.signal});
   setTimeout(()=>abort.abort(),50);await assert.rejects(p,/중지/);
 });
-test('UI escapes model content and exposes feedback separately',()=>{
+test('UI escapes model content and exposes feedback separately',async()=>{
+  await import('../web/message-utils.js');
   const ui=readFileSync(new URL('../web/app.js',import.meta.url),'utf8');
-  assert.match(ui,/escapeHTML\(line\)/);assert.match(ui,/\$\('feedback'\)\.onclick/);
+  assert.equal(globalThis.DualLensUI.markdown('<script>alert(1)</script>'),'<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>');assert.match(ui,/\$\('feedback'\)\.onclick/);
   assert.ok(!ui.includes('eval('));
 });
