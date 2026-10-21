@@ -73,7 +73,7 @@ function chatRow(r,nested=false){
   const b=document.createElement('button');b.className='chat-open'+(r.id===selected?' active':'');
   b.dataset.chatId=r.id;b.title=r.title||r.question;
   const title=document.createElement('span');title.className='history-title';title.textContent=(r.starred?'★ ':'')+(r.title||r.question);
-  const small=document.createElement('small');small.textContent=(!nested&&r.projectId?(state.projects.find(p=>p.id===r.projectId)?.name||'')+' · ':'')+r.rounds.length+'개 요청 · '+new Date(r.createdAt).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+  const small=document.createElement('small');small.textContent=(!nested&&r.projectId?(state.projects.find(p=>p.id===r.projectId)?.name||'')+', ':'')+r.rounds.length+'개 요청, '+new Date(r.createdAt).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
   b.innerHTML='<svg class="chat-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M20 4H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4v4l5-4h7a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1Z"/></svg>';
   b.append(title,small);b.onclick=()=>selectChat(r.id);
   b.onkeydown=e=>{if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))openChatMenu(e,r,b);};
@@ -108,7 +108,7 @@ function renderSetup(){
   $('runtime-detail').textContent=setup.nodeInstalled?'프로세스를 시작하지 못했습니다. Node.js 22 이상인지 확인하세요.':'Node.js 22 이상이 필요합니다.';
   for(const p of ['gpt','claude']){
     const c=state.connections[p];
-    $('setup-'+p).textContent=!setup[p]?'설치 필요':c?.status==='ready'?c.plan+' · 연결됨':c?.status==='checking'?'구독 확인 중':c?.status==='error'?'연결 확인 필요':'설치됨 · 로그인 후 연결 확인';
+    $('setup-'+p).textContent=!setup[p]?'설치 필요':c?.status==='ready'?c.plan+', 연결됨':c?.status==='checking'?'구독 확인 중':c?.status==='error'?'연결 확인 필요':'설치됨, 로그인 후 연결 확인';
     document.querySelector('[data-login="'+p+'"]').disabled=!setup[p]||busy();
   }
   $('check-connections').disabled=!setup.runtime||busy();
@@ -124,14 +124,14 @@ function fillEfforts(p,value='',prefix=''){
   const select=$(prefix+'effort-'+p);select.replaceChildren();
   for(const level of supported)select.append(new Option((effortNames[level]||level)+(level===defaultLevel?' (기본)':''),level===defaultLevel?'':level));
   if(!supported.includes(defaultLevel))select.prepend(new Option('기본값 확인 중',''));
-  if(value&&!supported.includes(value))select.append(new Option((effortNames[value]||value)+' · 지원 확인 필요',value));
+  if(value&&!supported.includes(value))select.append(new Option((effortNames[value]||value)+', 지원 확인 필요',value));
   select.value=value===defaultLevel?'':value;select.disabled=p==='gpt'&&!supported.length;
 }
 function fillModels(values,efforts=state.efforts||{}){
   const select=$('model-gpt');select.replaceChildren();
   if(!modelCatalog.length)select.append(new Option('목록을 불러와 주세요',''));
   for(const model of modelCatalog)select.append(new Option(model.name,model.id));
-  if(values.gpt&&!modelCatalog.some(m=>m.id===values.gpt))select.append(new Option(values.gpt+' · 저장된 선택',values.gpt));
+  if(values.gpt&&!modelCatalog.some(m=>m.id===values.gpt))select.append(new Option(values.gpt+', 저장된 선택',values.gpt));
   select.value=values.gpt||modelCatalog.find(m=>m.isDefault)?.id||modelCatalog[0]?.id||'';
   $('model-claude').value=values.claude||'claude-opus-5-5';
   for(const p of ['gpt','claude'])fillEfforts(p,efforts[p]||'');
@@ -200,8 +200,8 @@ window.receive=event=>{
     if(event.requestId!==folderRequest||!$('project-dialog').open)return;
     folderLoading=false;
     if(event.files.length)projectFiles=event.files.map(f=>({...f,selected:true}));
-    const skipped=Object.entries(event.skipped).map(([why,count])=>why+' '+count+'개').join(' · ');
-    $('folder-status').textContent=event.name+' · '+event.files.length+'개 읽음 · '+bytes(event.bytes)+(event.files.length?' · 저장하면 현재 파일 목록을 교체합니다.':' · 기존 목록을 유지합니다.')+(skipped?'\n제외: '+skipped:'')+(event.stopped?'\n5,000개 탐색 한도에 도달했습니다. 하위 폴더를 선택해 주세요.':'');
+    const skipped=Object.entries(event.skipped).map(([why,count])=>why+' '+count+'개').join(', ');
+    $('folder-status').textContent=event.name+', '+event.files.length+'개 읽음, '+bytes(event.bytes)+(event.files.length?', 저장하면 현재 파일 목록을 교체합니다.':', 기존 목록을 유지합니다.')+(skipped?'\n제외: '+skipped:'')+(event.stopped?'\n5,000개 탐색 한도에 도달했습니다. 하위 폴더를 선택해 주세요.':'');
     renderFiles();return;
   }
   if(event.type==='contextFile'){
@@ -239,7 +239,7 @@ function card(round,provider){
   const modelLabel=document.createElement('div');modelLabel.className='model-label';
   modelLabel.textContent=result.model?'사용 모델: '+result.model:requested?'요청 모델: '+requested:'기본 모델';
   const effort=result.requestedEffort??round.efforts?.[provider];
-  modelLabel.textContent+=(effort?' · 요청 강도 '+(effortNames[effort]||effort):' · 생각 강도 기본');
+  modelLabel.textContent+=(effort?', 요청 강도 '+(effortNames[effort]||effort):', 생각 강도 기본');
   body.before(modelLabel);
   if(result.status==='error'){
     const p=document.createElement('p');p.className='card-error';p.textContent=result.error;body.append(p);
@@ -316,8 +316,8 @@ function render(){
       const details=document.createElement('details');details.className='reference-details';
       const summary=document.createElement('summary');
       const refs=round.references,used=new Set(refs.excerpts.map(e=>e.path)).size;
-      summary.textContent='참고 자료 '+used+' / '+refs.totalFiles+'개 파일 · '+(refs.partial?'일부 구간':'전체 텍스트')+(refs.matched?'':' · 검색어 일치 없음');
-      const pre=document.createElement('pre');pre.textContent=refs.excerpts.map(e=>'['+e.path+' · 문자 '+(e.offset+1)+'–'+(e.offset+e.text.length)+']\n'+e.text).join('\n\n');
+      summary.textContent='참고 자료 '+used+' / '+refs.totalFiles+'개 파일, '+(refs.partial?'일부 구간':'전체 텍스트')+(refs.matched?'':', 검색어 일치 없음');
+      const pre=document.createElement('pre');pre.textContent=refs.excerpts.map(e=>'['+e.path+', 문자 '+(e.offset+1)+'–'+(e.offset+e.text.length)+']\n'+e.text).join('\n\n');
       details.append(summary,pre);section.append(details);
     }
     section.append(grid);$('timeline').append(section);
@@ -343,7 +343,7 @@ function render(){
   const active=state.history.find(r=>r.id===state.active?.id)?.rounds.find(r=>r.id===state.active?.roundId);
   $('running-label').textContent=Object.values(active?.answers||{}).some(a=>a.status==='summarizing')?'이전 대화 요약 중':state.active?.stage==='feedback'?'피드백 작성 중':'답변 작성 중';
   $('connection-detail').textContent=['gpt','claude'].map(p=>{
-    const c=state.connections[p];return names[p]+' — '+(!c?'미확인':c.status==='ready'?c.plan:c.status==='error'?c.error:'확인 중…');
+    const c=state.connections[p];return names[p]+': '+(!c?'미확인':c.status==='ready'?c.plan:c.status==='error'?c.error:'확인 중…');
   }).join('\n\n');
   renderSetup();
   if(record)for(const p of ['gpt','claude']){

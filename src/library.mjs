@@ -22,7 +22,7 @@ export async function scanFolder(root,{pdfTool=join(import.meta.dirname,'../extr
     for await(const entry of entries){
       if(++visited>5000){stopped=true;break;}
       const relative=prefix+entry.name,path=join(dir,entry.name);
-      if(entry.name.startsWith('.')||ignored.has(entry.name)||sensitive(entry.name)){skip(relative,'숨김·의존성·인증 관련 항목');continue;}
+      if(entry.name.startsWith('.')||ignored.has(entry.name)||sensitive(entry.name)){skip(relative,'숨김, 의존성, 인증 관련 항목');continue;}
       try{
         const stat=await lstat(path);
         if(stat.isSymbolicLink()){skip(relative,'심볼릭 링크');continue;}
@@ -48,12 +48,12 @@ export async function scanFolder(root,{pdfTool=join(import.meta.dirname,'../extr
             text=new TextDecoder('utf-8',{fatal:true}).decode(buffer.subarray(0,bytesRead));
           }finally{await handle.close();}
         }
-        if(!text.trim()||text.includes('\0')){skip(relative,'빈 파일·텍스트 없음');continue;}
+        if(!text.trim()||text.includes('\0')){skip(relative,'빈 파일, 텍스트 없음');continue;}
         if(Buffer.byteLength(text)>FILE_LIMIT){skip(relative,'추출 텍스트 100KB 초과');continue;}
         const file={path:relative,text};
         if(used+size(file)+1>LIBRARY_LIMIT){skip(relative,'프로젝트 자료 1MB 한도');continue;}
         used+=size(file)+1;files.push(file);
-      }catch{skip(relative,'읽기 실패·PDF 추출 불가');}
+      }catch{skip(relative,'읽기 실패, PDF 추출 불가');}
     }
   }
   await walk(root);

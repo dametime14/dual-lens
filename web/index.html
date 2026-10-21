@@ -17,14 +17,14 @@
   <section class="sidebar-settings" aria-labelledby="sidebar-settings-title">
     <h2 id="sidebar-settings-title" class="sidebar-section-title">설정</h2>
     <div class="settings-panel">
-      <button id="model-settings" class="settings-link model-settings-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>모델 설정<small>모델 선택 · 생각 강도</small></span><span class="nav-chevron" aria-hidden="true">›</span></button>
+      <button id="model-settings" class="settings-link model-settings-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>모델 설정<small>모델 선택, 생각 강도</small></span><span class="nav-chevron" aria-hidden="true">›</span></button>
       <button id="accounts" class="settings-link"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg><span>계정 연결</span><span class="nav-chevron" aria-hidden="true">›</span></button>
     </div>
     <button id="help" class="sidebar-help"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 1.5-2.5 2-2.5 3.5m0 3h.01"/></svg><span>사용법</span></button>
     <button id="storage" class="storage-button"><span id="storage-label">이번 실행만 유지</span><small id="storage-size"></small></button>
   </section>
 </aside>
-<div id="sidebar-resize" role="separator" tabindex="0" aria-label="사이드바 너비" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="236" title="드래그해서 너비 조절 · 방향키로도 조절"></div>
+<div id="sidebar-resize" role="separator" tabindex="0" aria-label="사이드바 너비" aria-orientation="vertical" aria-valuemin="220" aria-valuemax="420" aria-valuenow="236" title="드래그해서 너비 조절, 방향키로도 조절"></div>
 <button id="sidebar-open" aria-label="사이드바 열기" title="사이드바 열기" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m4-11 3 3-3 3"/></svg></button>
 <main id="workspace" class="home">
   <header><div class="title-block"><span id="project-breadcrumb"></span><span id="chat-title">새 대화</span></div><div class="header-actions"><button id="project-new-chat" hidden>＋ 프로젝트 채팅</button><button id="project-settings" hidden>Project settings</button><button id="context">Context</button><button id="export">Export</button><button id="chat-settings" aria-label="Settings">Settings</button><button id="check">연결 확인</button></div></header>
@@ -72,8 +72,8 @@
     <dt>문맥과 저장</dt><dd>긴 대화는 모델별로 요약합니다. 중요한 조건은 <strong>Context</strong>에서 고정할 수 있습니다. 프로젝트와 대화는 Mac에 텍스트로 최대 20MB 저장합니다. 저장 방식은 왼쪽 아래에서 변경합니다.</dd>
   </dl>
 </dialog>
-<dialog id="context-dialog"><div class="dialog-heading"><h2>문맥</h2><button data-close="context-dialog" aria-label="닫기">✕</button></div><p>오래된 대화는 모델별로 요약하고 최근 대화는 원문으로 전달합니다. 요약에는 누락이 생길 수 있습니다.</p><label for="pinned">항상 기억할 내용 · 두 모델에게 전달</label><textarea id="pinned" rows="3" maxlength="4000" placeholder="꼭 유지할 조건, 결정, 수치"></textarea><button id="save-pin" class="primary">고정 내용 저장</button><div class="memory-grid"><section><h3>GPT</h3><pre id="memory-gpt"></pre></section><section><h3>Claude</h3><pre id="memory-claude"></pre></section></div><p class="muted">요약도 기존 구독 사용량을 사용합니다. 대화 원문과 요약은 별도로 관리합니다.</p></dialog>
-<dialog id="storage-dialog"><div class="dialog-heading"><h2>대화 저장</h2><button data-close="storage-dialog" aria-label="닫기">✕</button></div><p>이 앱의 대화는 ChatGPT·Claude 웹 채팅 목록과 동기화되지 않습니다.</p><label class="choice"><input type="radio" name="storage-mode" value="session"><span>이번 실행만 유지<small>앱을 종료하면 대화가 사라집니다. 기존 앱 저장 파일도 삭제합니다.</small></span></label><label class="choice"><input type="radio" name="storage-mode" value="local"><span>Mac에 보관<small>텍스트만 저장 · 최대 20MB. 한도에 도달하면 추가 저장을 멈춥니다.</small></span></label><p id="saved-detail" class="muted"></p><button id="save-storage" class="primary">적용</button></dialog>
+<dialog id="context-dialog"><div class="dialog-heading"><h2>문맥</h2><button data-close="context-dialog" aria-label="닫기">✕</button></div><p>오래된 대화는 모델별로 요약하고 최근 대화는 원문으로 전달합니다. 요약에는 누락이 생길 수 있습니다.</p><label for="pinned">항상 기억할 내용, 두 모델에게 전달</label><textarea id="pinned" rows="3" maxlength="4000" placeholder="꼭 유지할 조건, 결정, 수치"></textarea><button id="save-pin" class="primary">고정 내용 저장</button><div class="memory-grid"><section><h3>GPT</h3><pre id="memory-gpt"></pre></section><section><h3>Claude</h3><pre id="memory-claude"></pre></section></div><p class="muted">요약도 기존 구독 사용량을 사용합니다. 대화 원문과 요약은 별도로 관리합니다.</p></dialog>
+<dialog id="storage-dialog"><div class="dialog-heading"><h2>대화 저장</h2><button data-close="storage-dialog" aria-label="닫기">✕</button></div><p>이 앱의 대화는 ChatGPT, Claude 웹 채팅 목록과 동기화되지 않습니다.</p><label class="choice"><input type="radio" name="storage-mode" value="session"><span>이번 실행만 유지<small>앱을 종료하면 대화가 사라집니다. 기존 앱 저장 파일도 삭제합니다.</small></span></label><label class="choice"><input type="radio" name="storage-mode" value="local"><span>Mac에 보관<small>텍스트만 저장, 최대 20MB. 한도에 도달하면 추가 저장을 멈춥니다.</small></span></label><p id="saved-detail" class="muted"></p><button id="save-storage" class="primary">적용</button></dialog>
 <dialog id="models-dialog">
   <div class="dialog-heading"><h2>모델 설정</h2><button data-close="models-dialog" aria-label="닫기">✕</button></div>
   <div class="model-settings-grid">
@@ -81,7 +81,7 @@
     <section><h3><img class="provider-logo" src="claude.svg" alt="">Claude</h3><label for="model-claude">모델</label><select id="model-claude"><option value="claude-opus-5-5">Opus 5.5</option><option value="claude-sonnet-5-5">Sonnet 5.5</option><option value="claude-haiku-5-5">Haiku 5.5</option></select><label for="effort-claude">생각 강도</label><select id="effort-claude"></select></section>
   </div>
   <p id="model-list-status" role="status"></p>
-  <p>이 앱의 모든 대화에서 다음 질문·피드백·문맥 요약부터 적용됩니다. 실패한 답변을 다시 시도할 때는 당시 선택을 유지합니다.</p>
+  <p>이 앱의 모든 대화에서 다음 질문, 피드백, 문맥 요약부터 적용됩니다. 실패한 답변을 다시 시도할 때는 당시 선택을 유지합니다.</p>
   <p class="muted">선택한 모델 버전을 지정해 요청합니다. 생각 강도의 기본값은 모델에 따라 다르며, 높은 강도는 시간과 구독 사용량을 더 쓸 수 있습니다. 계정의 접근 권한과 서비스의 모델 전환 정책이 적용됩니다.</p>
   <div class="dialog-actions"><button id="refresh-models">GPT 목록 새로고침</button><button id="save-models" class="primary">저장</button></div>
 </dialog>
@@ -91,7 +91,7 @@
   <div class="setup-row"><div><strong>ChatGPT</strong><p id="setup-gpt">설치 확인 중</p></div><button data-guide="gpt">설치 안내</button><button data-login="gpt">공식 로그인 열기</button></div>
   <div class="setup-row"><div><strong>Claude</strong><p id="setup-claude">설치 확인 중</p></div><button data-guide="claude">설치 안내</button><button data-login="claude">공식 로그인 열기</button></div>
   <p id="python-setup" hidden>Claude 사용량 확인에 Python 3가 필요합니다. <button data-guide="python">설치 안내</button></p>
-  <p>ChatGPT·Claude 구독 계정을 선택하세요. 로그인 정보는 공식 도구가 관리하며, 같은 Mac의 해당 도구와 계정을 공유합니다.</p>
+  <p>ChatGPT, Claude 구독 계정을 선택하세요. 로그인 정보는 공식 도구가 관리하며, 같은 Mac의 해당 도구와 계정을 공유합니다.</p>
   <pre id="connection-detail"></pre>
   <p class="muted">매 요청 전 구독과 유료 추가 사용 설정을 확인합니다.</p>
   <div class="dialog-actions"><button id="check-connections" class="primary">연결 확인</button></div>
@@ -102,9 +102,9 @@
   <label for="project-name">프로젝트 이름</label><input id="project-name" maxlength="80" placeholder="예: 글쓰기, 사업 기획">
   <label for="project-instructions">답변 지침 <span class="field-limit">최대 4,000자</span></label><textarea id="project-instructions" rows="3" maxlength="4000" placeholder="답변 방식, 역할, 꼭 지킬 조건"></textarea>
   <div class="field-row"><label for="project-context">참고 문맥 <span class="field-limit">최대 16,000자</span></label><button id="import-context">텍스트 파일 추가</button></div><textarea id="project-context" rows="6" maxlength="16000" placeholder="배경 정보, 용어, 확정된 사실이나 자료"></textarea>
-  <div class="field-row"><label>프로젝트 파일 <span class="field-limit">최대 200개 · 1MB</span></label><button id="import-folder">폴더 가져오기</button></div>
+  <div class="field-row"><label>프로젝트 파일 <span class="field-limit">최대 200개, 1MB</span></label><button id="import-folder">폴더 가져오기</button></div>
   <p id="folder-status" class="muted"></p><div id="project-files" class="file-list"></div>
-  <p class="muted">텍스트·코드·PDF 텍스트를 저장합니다. 체크한 파일만 저장되며, 질문 시 관련 구간을 선택한 모델에 보냅니다. 원본 변경은 다시 가져와야 반영됩니다.</p>
+  <p class="muted">텍스트, 코드, PDF 텍스트를 저장합니다. 체크한 파일만 저장되며, 질문 시 관련 구간을 선택한 모델에 보냅니다. 원본 변경은 다시 가져와야 반영됩니다.</p>
   <p class="muted">이 프로젝트의 두 모델에게 매 요청마다 적용됩니다. 다른 대화 기록은 자동으로 공유하지 않습니다.</p>
   <div class="dialog-actions"><button id="delete-project" class="danger" hidden>프로젝트 삭제</button><button id="save-project" class="primary">저장</button></div>
 </dialog>
