@@ -5,6 +5,7 @@ let scope='all',showArchive=false,editingProject=null,savingProject=false,search
 const drafts=new Map();
 const expandedProjects=new Set();
 let menuChatId=null,menuProjectId=null,menuOrigin=null,renamingChatId=null,renamingProjectId=null;
+let deletingChatId=null;
 let layout={sidebarWidth:236,sidebarCollapsed:false},resizeDrag=null;
 let modelCatalog=[],modelsLoading=false,catalogRequested=false;
 const quickPending=new Set();
@@ -361,6 +362,7 @@ $('rename-chat').onclick=()=>{
   renamingChatId=r.id;renamingProjectId=null;closeChatMenu();$('rename-dialog-title').textContent='채팅 이름 변경';$('rename-label').textContent='채팅 이름';$('rename-title').maxLength=120;$('rename-title').value=r.title||r.question;
   $('rename-dialog').showModal();$('rename-title').focus();$('rename-title').select();
 };
+$('delete-chat').onclick=()=>openDeleteChat(menuChatId);
 $('manage-chat').onclick=()=>{const id=menuChatId;closeChatMenu();if(!busy()){selectChat(id);openChat();}};
 $('rename-project').onclick=()=>{
   const p=state.projects.find(p=>p.id===menuProjectId);if(!p||busy())return;
@@ -432,8 +434,19 @@ $('storage').onclick=()=>{
   $('storage-dialog').showModal();
 };
 $('save-storage').onclick=()=>{const mode=document.querySelector('[name="storage-mode"]:checked').value;send({action:'storage',mode});$('storage-dialog').close();};
-$('delete').onclick=()=>{$('chat-dialog').close();$('delete-dialog').showModal();};
-$('delete-confirm').onclick=()=>{send({action:'delete',id:selected});selected=null;$('delete-dialog').close();render();};
+function openDeleteChat(id){
+  const r=state.history.find(r=>r.id===id);if(!r||busy())return;
+  deletingChatId=r.id;closeChatMenu();$('chat-dialog').close();
+  $('delete-chat-title').textContent=r.title||r.question;
+  $('delete-dialog').showModal();$('delete-dialog').querySelector('[data-close]').focus();
+}
+$('delete').onclick=()=>openDeleteChat(selected);
+$('delete-dialog').onclose=()=>{deletingChatId=null;};
+$('delete-confirm').onclick=()=>{
+  const id=deletingChatId;if(!id||busy())return;
+  if(!state.history.some(r=>r.id===id)){$('delete-dialog').close();return;}
+  send({action:'delete',id});drafts.delete(id);$('delete-dialog').close();
+};
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>$(b.dataset.close).close();
 $('export').onclick=()=>{
   const r=current();if(!r)return;
