@@ -169,9 +169,10 @@ export class Controller {
       }
       case 'project-delete': {
         this.assertIdle();this.project(message.id);
+        const deletedChatIds=this.history.filter(r=>r.projectId===message.id).map(r=>r.id);
         this.projects=this.projects.filter(p=>p.id!==message.id);
-        for(const r of this.history)if(r.projectId===message.id)r.projectId=null;
-        this.persist();this.publish();this.emit({type:'projectDeleted',id:message.id});return;
+        this.history=this.history.filter(r=>r.projectId!==message.id);
+        this.persist();this.publish();this.emit({type:'projectDeleted',id:message.id,deletedChatIds});return;
       }
       case 'chat-update': {
         this.assertIdle();const r=this.get(message.id);

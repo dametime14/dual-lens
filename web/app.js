@@ -214,7 +214,13 @@ window.receive=event=>{
     if(savingProject){$('project-dialog').close();expandedProjects.add(event.id);if(!editingProject)switchScope(event.id);else render();savingProject=false;}
     return;
   }
-  if(event.type==='projectDeleted'){$('delete-project-dialog').close();$('project-dialog').close();if(scope===event.id)switchScope('all');return;}
+  if(event.type==='projectDeleted'){
+    $('delete-project-dialog').close();$('project-dialog').close();
+    if(scope===event.id)switchScope('all');
+    for(const id of event.deletedChatIds||[])drafts.delete(id);
+    drafts.delete('new:'+event.id);expandedProjects.delete(event.id);editingProject=null;projectFiles=[];
+    return;
+  }
   if(event.type==='projectRenamed'){if(event.id===renamingProjectId){$('rename-dialog').close();renamingProjectId=null;}render();return;}
   if(event.type==='chatUpdated'){
     $('chat-dialog').close();if(event.id===renamingChatId){$('rename-dialog').close();renamingChatId=null;}const r=current();if(r)scope=r.projectId||'all';render();return;
@@ -398,7 +404,12 @@ $('save-project').onclick=()=>{
   if(!$('project-name').value.trim()){toast('프로젝트 이름을 입력해 주세요.');return;}
   savingProject=true;send({action:'project-save',id:editingProject,name:$('project-name').value,instructions:$('project-instructions').value,context:$('project-context').value,files:projectFiles.filter(f=>f.selected).map(({path,text})=>({path,text}))});
 };
-$('delete-project').onclick=()=>$('delete-project-dialog').showModal();
+$('delete-project').onclick=()=>{
+  const project=state.projects.find(p=>p.id===editingProject);if(!project||busy())return;
+  const count=state.history.filter(r=>r.projectId===project.id).length;
+  $('delete-project-summary').textContent='삭제할 프로젝트: '+project.name+' (채팅 '+count+'개)';
+  $('delete-project-dialog').showModal();$('delete-project-dialog').querySelector('[data-close]').focus();
+};
 $('delete-project-confirm').onclick=()=>send({action:'project-delete',id:editingProject});
 $('import-context').onclick=()=>send({action:'importContext'});
 $('import-folder').onclick=()=>{
@@ -437,7 +448,7 @@ $('save-storage').onclick=()=>{const mode=document.querySelector('[name="storage
 function openDeleteChat(id){
   const r=state.history.find(r=>r.id===id);if(!r||busy())return;
   deletingChatId=r.id;closeChatMenu();$('chat-dialog').close();
-  $('delete-chat-title').textContent=r.title||r.question;
+  $('delete-chat-title').textContent='삭제할 채팅: '+(r.title||r.question);
   $('delete-dialog').showModal();$('delete-dialog').querySelector('[data-close]').focus();
 }
 $('delete').onclick=()=>openDeleteChat(selected);

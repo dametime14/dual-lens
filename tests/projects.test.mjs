@@ -33,17 +33,48 @@ test('project edits apply on next turn; title rename never changes original ques
   assert.match(calls.at(-1).prompt,/NEW_RULE/);assert.doesNotMatch(calls.at(-1).prompt,/OLD_RULE/);
   assert.equal(c.history[0].archived,false);assert.equal(c.history[0].starred,true);
 });
-test('move changes project context; deleting project keeps all conversations',async t=>{
+test('moving a chat out removes project context and preserves it when the empty project is deleted',async t=>{
   const {c,calls}=fixture(t);
   const p=await c.dispatch({action:'project-save',name:'A',context:'PROJECT_NOTE'});
   const id=await c.dispatch({action:'ask',question:'q'});await c.pending;
   await c.dispatch({action:'chat-update',id,projectId:p});
   await c.dispatch({action:'ask',id,target:'claude',question:'next'});await c.pending;
   assert.match(calls.at(-1).prompt,/PROJECT_NOTE/);
+  await c.dispatch({action:'chat-update',id,projectId:null});
   await c.dispatch({action:'project-delete',id:p});assert.equal(c.projects.length,0);assert.equal(c.history[0].projectId,null);
   assert.equal(c.history[0].rounds.length,2);
   await c.dispatch({action:'ask',id,question:'again'});await c.pending;
   assert.doesNotMatch(calls.at(-1).prompt,/PROJECT_NOTE/);
+});
+test('deleting a project removes only its current chats, including archived chats, after restart',async t=>{
+  const {c,dir,events}=fixture(t);
+  const p=await c.dispatch({action:'project-save',name:'Delete me'});
+  const other=await c.dispatch({action:'project-save',name:'Keep me'});
+  async function chat(projectId,question){
+    const id=await c.dispatch({action:'ask',projectId,question});await c.pending;return id;
+  }
+  const active=await chat(p,'active');
+  const archived=await chat(p,'archived');
+  await c.dispatch({action:'chat-update',id:archived,archived:true});
+  const moved=await chat(p,'moved out');
+  await c.dispatch({action:'chat-update',id:moved,projectId:other});
+  const unrelated=await chat(other,'other project');
+  const standalone=await chat(null,'standalone');
+  const survivors=structuredClone(c.history.filter(r=>r.projectId!==p));
+  await c.dispatch({action:'project-delete',id:p});
+  assert.deepEqual(c.history,survivors);
+  assert.deepEqual(new Set(c.history.map(r=>r.id)),new Set([moved,unrelated,standalone]));
+  assert.deepEqual(c.projects.map(p=>p.id),[other]);
+  assert.deepEqual(new Set(events.findLast(e=>e.type==='projectDeleted').deletedChatIds),new Set([active,archived]));
+  const reopened=new Controller(dir,()=>{});
+  assert.deepEqual(reopened.history,JSON.parse(JSON.stringify(survivors)));
+  assert.deepEqual(reopened.projects.map(p=>p.id),[other]);
+  const before=JSON.stringify({projects:c.projects,history:c.history});
+  await assert.rejects(c.dispatch({action:'project-delete',id:p}));
+  assert.equal(JSON.stringify({projects:c.projects,history:c.history}),before);
+  c.checking=true;
+  await assert.rejects(c.dispatch({action:'project-delete',id:other}));
+  assert.equal(JSON.stringify({projects:c.projects,history:c.history}),before);
 });
 test('projects and chat metadata persist together; v1 array is migrated without losing originals',async t=>{
   const {c,dir}=fixture(t);
